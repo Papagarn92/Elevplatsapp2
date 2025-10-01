@@ -55,27 +55,28 @@ h1 {
 
 /* style.css */
 
-/* Stil för Whiteboard */
+/* style.css */
+
+/* Stil för Whiteboard (FIXERAD POSITIONERING) */
 #whiteboard {
     background-color: #f7f7f7; 
     color: #333;
     border: 5px solid #6d4c41; 
     border-radius: 5px;
-    padding: 20px 10px;
+    padding: 10px;
     font-size: 24px;
     font-weight: bold;
     text-align: center;
     box-shadow: 0 4px 10px rgba(0, 0, 0, 0.2);
     
-    /* FIX: Tvinga elementet att ta plats i Grid-systemet */
-    grid-column: 6 / span 4; 
-    /* Tvingar den till den första raden */
-    grid-row: 1; 
+    /* FIX: Positionera tavlan absolut OVANFÖR bänklayouten */
+    position: absolute;
+    top: 0; /* Fäster den i toppen av containern */
     
-    /* Säkerställ att tavlan är överst */
-    z-index: 10; 
-    /* Lägg till lite marginal nedåt för att separera från bänkarna */
-    margin-bottom: 20px; 
+    /* Beräknar position: Ska täcka kolumn 6-9 i Grid-systemet.
+       Vi sätter bredden till 4/9-delar av totalbredden. */
+    width: 48.5%; 
+    right: 1.5%; /* Justerar positionen till höger */
 }
 button {
     padding: 10px 15px;
@@ -130,17 +131,21 @@ button {
 
 /* I style.css */
 
-/* Klassrumslayout och Bänkar */
+/* style.css */
+
 #classroom-layout {
     display: grid;
-    /* FIX: Definierar 9 kolumner: 4 bänkkolumner, 1 gång (100px), 4 bänkkolumner */
     grid-template-columns: repeat(4, 1fr) 100px repeat(4, 1fr); 
     gap: 10px; 
     padding: 20px;
     border: 4px dashed #adb5bd;
     border-radius: 10px;
     background-color: #f1f3f5;
-    max-width: 900px; /* Se till att den är tillräckligt bred */
+    max-width: 900px;
+    
+    /* FIX: Lägg till utrymme i toppen för tavlan */
+    padding-top: 100px; 
+    position: relative; /* Behövs för att positionera tavlan absolut */
 }
 
 /* Denna regel är viktig för att bänkarna ska ta 1 kolumn vardera */
@@ -196,5 +201,6 @@ button {
     background-color: #dc3545; /* Röd färg */
     color: white;
 }
+
 
 
