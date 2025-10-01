@@ -53,26 +53,29 @@ h1 {
 
 /* style.css */
 
+/* style.css */
+
 /* Stil för Whiteboard */
 #whiteboard {
-    background-color: #f7f7f7; /* Lätt grå/vit tavla */
+    background-color: #f7f7f7; 
     color: #333;
-    border: 5px solid #6d4c41; /* Träram eller tjock kant */
+    border: 5px solid #6d4c41; 
     border-radius: 5px;
     padding: 20px 10px;
-    margin-bottom: 20px;
     font-size: 24px;
     font-weight: bold;
     text-align: center;
     box-shadow: 0 4px 10px rgba(0, 0, 0, 0.2);
     
-    /* Positionering: Se till att den centrerar med bänkarna */
-    width: 60%; 
-    max-width: 550px; /* Begränsar bredden till att täcka bänkarna i mitten */
-    margin-left: auto;
-    margin-right: auto;
-    /* Använd flex eller block för att se till att den centrerar korrekt */
-    display: block; 
+    /* FIX: Tvinga elementet att ta plats i Grid-systemet */
+    grid-column: 6 / span 4; 
+    /* Tvingar den till den första raden */
+    grid-row: 1; 
+    
+    /* Säkerställ att tavlan är överst */
+    z-index: 10; 
+    /* Lägg till lite marginal nedåt för att separera från bänkarna */
+    margin-bottom: 20px; 
 }
 button {
     padding: 10px 15px;
@@ -193,4 +196,5 @@ button {
     background-color: #dc3545; /* Röd färg */
     color: white;
 }
+
 
