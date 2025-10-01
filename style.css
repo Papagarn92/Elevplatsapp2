@@ -51,6 +51,29 @@ h1 {
     margin-bottom: 15px;
 }
 
+/* style.css */
+
+/* Stil för Whiteboard */
+#whiteboard {
+    background-color: #f7f7f7; /* Lätt grå/vit tavla */
+    color: #333;
+    border: 5px solid #6d4c41; /* Träram eller tjock kant */
+    border-radius: 5px;
+    padding: 20px 10px;
+    margin-bottom: 20px;
+    font-size: 24px;
+    font-weight: bold;
+    text-align: center;
+    box-shadow: 0 4px 10px rgba(0, 0, 0, 0.2);
+    
+    /* Positionering: Se till att den centrerar med bänkarna */
+    width: 60%; 
+    max-width: 550px; /* Begränsar bredden till att täcka bänkarna i mitten */
+    margin-left: auto;
+    margin-right: auto;
+    /* Använd flex eller block för att se till att den centrerar korrekt */
+    display: block; 
+}
 button {
     padding: 10px 15px;
     border: none;
@@ -170,3 +193,4 @@ button {
     background-color: #dc3545; /* Röd färg */
     color: white;
 }
+
