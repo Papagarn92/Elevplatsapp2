@@ -12,6 +12,7 @@ const classroomLayout = document.getElementById('classroom-layout');
 
 /**
  * Ritar ut de visuella bänkarna i klassrummet baserat på maxantalet.
+ * KORRIGERAD: Tvingar layouten till 8 bänkar per rad (4 + Gång + 4).
  * @param {number} max - Det maximala numret (antalet bänkar).
  * @param {number[]} drawnList - Lista över nummer som redan är dragna.
  */
@@ -34,18 +35,18 @@ function renderDesks(max, drawnList = []) {
         let gridColumnStart;
         
         if (positionInRow <= 4) {
-            // Bänkar 1-4 startar på kolumn 1, 2, 3, eller 4.
+            // Bänkar 1, 2, 3, 4 startar på Grid-kolumn 1, 2, 3, eller 4.
             gridColumnStart = positionInRow;
         } else {
-            // Bänkar 5-8 startar på kolumn 6, 7, 8, eller 9 (hoppar över kolumn 5 = Gången).
-            // Vi lägger till 1 till positionen för att hoppa över kolumn 5.
+            // Bänkar 5, 6, 7, 8 hoppar över gången (Grid-kolumn 5).
+            // De startar på Grid-kolumn 6, 7, 8, eller 9 (positionInRow + 1).
             gridColumnStart = positionInRow + 1; 
         }
 
         desk.style.gridColumnStart = gridColumnStart;
         // ----------------------------------------------------
 
-        // Markera dragna bänkar vid start
+        // Markera dragna bänkar vid start (din befintliga logik)
         const deskNumber = i;
         if (lastDrawnNumber === deskNumber) {
             desk.classList.add('current-draw');
