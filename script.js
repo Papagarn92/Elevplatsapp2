@@ -10,8 +10,11 @@ const resultDisplay = document.getElementById('resultDisplay');
 const remainingCount = document.getElementById('remainingCount');
 const classroomLayout = document.getElementById('classroom-layout');
 
-
-// Ändra funktionssignaturen till att inkludera drawnList
+/**
+ * Ritar ut de visuella bänkarna i klassrummet baserat på maxantalet.
+ * @param {number} max - Det maximala numret (antalet bänkar).
+ * @param {number[]} drawnList - Lista över nummer som redan är dragna.
+ */
 function renderDesks(max, drawnList = []) { 
     classroomLayout.innerHTML = ''; 
 
@@ -21,14 +24,34 @@ function renderDesks(max, drawnList = []) {
         desk.id = `desk-${i}`;
         desk.textContent = `Plats ${i}`;
 
-        // ... (Din befintliga logik för gridColumnStart) ...
+        // ----------------------------------------------------
+        // KORRIGERAD LOGIK FÖR PLACERING MED 8 BÄNKAR/RAD:
+        
+        // 1. Ta reda på vilken position (1-8) bänken har i raden:
+        // Exempel: Bänk 8 ger position 8. Bänk 9 ger position 1. Bänk 13 ger position 5.
+        const positionInRow = (i % 8 === 0) ? 8 : (i % 8); 
 
-        // -------------------------------------------------------------------
-        // NY LOGIK: MARKERA DRAGNA BÄNKAR VID START
-        if (drawnList.includes(i)) {
+        let gridColumnStart;
+        
+        if (positionInRow <= 4) {
+            // Bänkar 1-4 startar på kolumn 1, 2, 3, eller 4.
+            gridColumnStart = positionInRow;
+        } else {
+            // Bänkar 5-8 startar på kolumn 6, 7, 8, eller 9 (hoppar över kolumn 5 = Gången).
+            // Vi lägger till 1 till positionen för att hoppa över kolumn 5.
+            gridColumnStart = positionInRow + 1; 
+        }
+
+        desk.style.gridColumnStart = gridColumnStart;
+        // ----------------------------------------------------
+
+        // Markera dragna bänkar vid start
+        const deskNumber = i;
+        if (lastDrawnNumber === deskNumber) {
+            desk.classList.add('current-draw');
+        } else if (drawnList.includes(deskNumber)) {
             desk.classList.add('drawn');
         }
-        // -------------------------------------------------------------------
 
         classroomLayout.appendChild(desk);
     }
