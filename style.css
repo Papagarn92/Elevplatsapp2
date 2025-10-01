@@ -9,15 +9,13 @@ body {
     background-color: #e9ecef;
 }
 
-/* I style.css */
-
 .container {
     background-color: #fff;
     padding: 30px;
     border-radius: 12px;
     box-shadow: 0 8px 20px rgba(0, 0, 0, 0.15);
     width: 100%;
-    /* KORRIGERING: Öka maxbredden för att rymma 8 bänkar */
+    /* Maxbredd för att rymma 8 bänkar */
     max-width: 950px; 
     text-align: center;
 }
@@ -27,7 +25,7 @@ h1 {
     margin-bottom: 25px;
 }
 
-/* Kontroller och Input */
+/* Kontroller och Input/Select */
 .controls {
     margin-bottom: 30px;
     padding: 15px;
@@ -42,53 +40,31 @@ h1 {
     font-weight: 600;
 }
 
-.controls input {
+.controls select {
     padding: 8px;
     border: 1px solid #ced4da;
     border-radius: 4px;
-    width: 100px;
-    text-align: center;
+    width: 100%;
     margin-bottom: 15px;
 }
 
-/* style.css */
-
-/* style.css */
-
-/* style.css */
-
-/* Stil för Whiteboard (FIXERAD POSITIONERING) */
-#whiteboard {
-    background-color: #f7f7f7; 
-    color: #333;
-    border: 5px solid #6d4c41; 
-    border-radius: 5px;
-    padding: 10px;
-    font-size: 24px;
-    font-weight: bold;
-    text-align: center;
-    box-shadow: 0 4px 10px rgba(0, 0, 0, 0.2);
-    
-    /* FIX: Positionera tavlan absolut OVANFÖR bänklayouten */
-    position: absolute;
-    top: 0; /* Fäster den i toppen av containern */
-    
-    /* Beräknar position: Ska täcka kolumn 6-9 i Grid-systemet.
-       Vi sätter bredden till 4/9-delar av totalbredden. */
-    width: 48.5%; 
-    right: 1.5%; /* Justerar positionen till höger */
+.button-group {
+    display: flex;
+    gap: 10px; 
+    margin-top: 15px;
 }
+
 button {
     padding: 10px 15px;
     border: none;
     border-radius: 5px;
     cursor: pointer;
     font-size: 16px;
-    margin: 0 5px;
     transition: background-color 0.3s, opacity 0.3s;
 }
 
 #drawButton {
+    flex-grow: 1;
     background-color: #28a745;
     color: white;
 }
@@ -103,19 +79,12 @@ button {
 }
 
 #resetButton {
+    width: 100px; /* Liten och röd */
     background-color: #dc3545;
     color: white;
 }
 
-#resetButton:hover {
-    background-color: #c82333;
-}
-
 /* Resultatdisplay */
-#resultArea {
-    margin-bottom: 30px;
-}
-
 #resultDisplay {
     font-size: 72px;
     font-weight: bold;
@@ -127,32 +96,24 @@ button {
     margin-top: 10px;
 }
 
-/* I style.css */
-
-/* I style.css */
-
-/* style.css */
-
+/* Klassrumslayout och Bänkar */
 #classroom-layout {
     display: grid;
+    /* Denna sätts dynamiskt i JavaScript baserat på vald sal */
     grid-template-columns: repeat(4, 1fr) 100px repeat(4, 1fr); 
-    gap: 10px; 
+    gap: 10px;
     padding: 20px;
     border: 4px dashed #adb5bd;
     border-radius: 10px;
     background-color: #f1f3f5;
-    max-width: 900px;
     
-    /* FIX: Lägg till utrymme i toppen för tavlan */
+    /* Utrymme för Whiteboarden i toppen */
     padding-top: 100px; 
-    position: relative; /* Behövs för att positionera tavlan absolut */
+    position: relative; 
 }
 
-/* Denna regel är viktig för att bänkarna ska ta 1 kolumn vardera */
 .desk {
     grid-column: span 1; 
-    
-    /* Behåll din befintliga bänkstil */
     background-color: #e9ecef;
     border: 2px solid #495057;
     border-radius: 6px;
@@ -163,44 +124,40 @@ button {
     box-shadow: 0 2px 4px rgba(0, 0, 0, 0.05);
 }
 
-/* Notera: Om maxantalet inte är delbart med 4 kan bänkarna hamna snett i slutet.
-   Detta är en begränsning med denna enkla CSS Grid-lösning. */
-
 /* Stil för bänk som har dragits */
 .desk.drawn {
-    background-color: #28a745; /* Grön */
+    background-color: #28a745; 
     color: white;
     border-color: #1e7e34;
-    box-shadow: 0 4px 8px rgba(39, 167, 69, 0.4);
 }
 
 /* Stil för bänk som just nu dras (den senaste) */
 .desk.current-draw {
-    background-color: #ffc107; /* Gul */
+    background-color: #ffc107; 
     color: #333;
     border-color: #d39e00;
-    transform: scale(1.1); /* Liten animation */
-}
-/* style.css - Nya regler */
-
-.button-group {
-    display: flex;
-    gap: 10px; /* Mellanrum mellan knapparna */
-    margin-top: 15px;
+    transform: scale(1.1); 
 }
 
-.button-group #drawButton {
-    flex-grow: 1; /* Låter drag-knappen ta upp det mesta utrymmet */
+/* Whiteboard Positionering */
+#whiteboard {
+    background-color: #f7f7f7; 
+    color: #333;
+    border: 5px solid #6d4c41; 
+    border-radius: 5px;
+    padding: 10px;
+    font-size: 24px;
+    font-weight: bold;
+    text-align: center;
+    box-shadow: 0 4px 10px rgba(0, 0, 0, 0.2);
+    
+    /* FIX: Positionerar tavlan absolut OVANFÖR bänklayouten */
+    position: absolute;
+    /* Fäster den i toppen, kompenserar för paddingen */
+    top: -5px; 
+    
+    /* Sätter bredden och positionen så den täcker bänk 5-8 */
+    width: 48.5%; 
+    right: 1.5%; 
+    z-index: 10; 
 }
-
-.button-group #resetButton {
-    /* Gör Återställ-knappen liten och tvingar den till en röd stil */
-    width: 80px; 
-    padding: 10px; 
-    font-size: 14px;
-    background-color: #dc3545; /* Röd färg */
-    color: white;
-}
-
-
-
