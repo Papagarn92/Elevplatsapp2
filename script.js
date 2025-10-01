@@ -1,18 +1,82 @@
-// Globala variabler för att hålla reda på tillstånd och element
+// Nyckeln vi använder i LocalStorage. Varje sal rensar gamla dragningar.
+const STORAGE_KEY = 'elevPlatserDrawn';
+
+// -------------------------------------------------------------------
+// KLASSRUMS KONFIGURATION
+const CLASSROOM_CONFIG = {
+    "Sal 302": {
+        max_seats: 26, 
+        columns_per_row: 8, // 4 bänkar + Gång + 4 bänkar
+        gang_column_width: "100px" 
+    },
+    "Sal 201": {
+        max_seats: 12, 
+        columns_per_row: 4, // 2 bänkar + Gång + 2 bänkar
+        gang_column_width: "50px"
+    },
+    // Lägg till fler salar här när du har informationen!
+};
+// -------------------------------------------------------------------
+
+// Globala variabler för tillstånd
 let availableNumbers = []; 
 let lastDrawnNumber = null;
+let currentClassroom = "Sal 302"; // Standardvärde
 
 // Hämta DOM-element
-const maxPlatserInput = document.getElementById('maxPlatserInput');
+const classroomSelect = document.getElementById('classroomSelect'); 
+const maxPlatserInput = document.getElementById('maxPlatserInput'); 
 const drawButton = document.getElementById('drawButton');
 const resetButton = document.getElementById('resetButton');
 const resultDisplay = document.getElementById('resultDisplay');
 const remainingCount = document.getElementById('remainingCount');
 const classroomLayout = document.getElementById('classroom-layout');
 
-// I script.js
+// --- LOCALSTORAGE FUNKTIONER ---
+
+/**
+ * Sparar listan över dragna nummer till LocalStorage.
+ */
+function sparaDragnaNummer(drawnList) {
+    try {
+        localStorage.setItem(STORAGE_KEY, JSON.stringify(drawnList));
+    } catch (e) {
+        console.error("Kunde inte spara till LocalStorage", e);
+    }
+}
+
+/**
+ * Laddar listan över dragna nummer från LocalStorage.
+ */
+function laddaDragnaNummer() {
+    try {
+        const stored = localStorage.getItem(STORAGE_KEY);
+        return stored ? JSON.parse(stored) : [];
+    } catch (e) {
+        console.error("Kunde inte ladda från LocalStorage", e);
+        return [];
+    }
+}
+
+// --- INITIALISERING OCH LAYOUT FUNKTIONER ---
+
+/**
+ * Fyller select-elementet med alla tillgängliga salar.
+ */
+function populateClassroomSelect() {
+    for (const name in CLASSROOM_CONFIG) {
+        const option = document.createElement('option');
+        option.value = name;
+        option.textContent = name;
+        classroomSelect.appendChild(option);
+    }
+}
+
+/**
+ * Ritar ut de visuella bänkarna i klassrummet baserat på maxantalet.
+ */
 function renderDesks(max, drawnList = []) { 
-    // Tömmer layouten på gamla bänkar
+    // Rensar ALLA befintliga bänk-DIVAR inuti classroomLayout
     classroomLayout.innerHTML = ''; 
 
     const config = CLASSROOM_CONFIG[currentClassroom]; 
@@ -24,21 +88,21 @@ function renderDesks(max, drawnList = []) {
         desk.id = `desk-${i}`;
         desk.textContent = `Plats ${i}`;
 
-        // ----------------------------------------------------
-        // KORRIGERAD LOGIK FÖR PLACERING:
+        // 1. Ta reda på vilken position (1 till columns_per_row) bänken har i raden:
         const positionInRow = (i % config.columns_per_row === 0) ? config.columns_per_row : (i % config.columns_per_row); 
+
         let gridColumnStart;
         
         if (positionInRow <= seats_per_side) {
+            // Bänkar i första halvan
             gridColumnStart = positionInRow;
         } else {
+            // Bänkar i andra halvan hoppar över gången (+1)
             gridColumnStart = positionInRow + 1; 
         }
 
         desk.style.gridColumnStart = gridColumnStart;
-        // Vi behöver INTE sätta grid-row här!
-        // ----------------------------------------------------
-
+        
         // Markera dragna bänkar vid start
         const deskNumber = i;
         if (lastDrawnNumber === deskNumber) {
@@ -53,7 +117,6 @@ function renderDesks(max, drawnList = []) {
 
 /**
  * Uppdaterar texten som visar antalet återstående platser och knappar.
- * NU: Reset-knappen är ALLTID synlig.
  */
 function updateUI() {
     const totalPlatser = parseInt(maxPlatserInput.value);
@@ -61,68 +124,85 @@ function updateUI() {
 
     remainingCount.textContent = `Draget: ${draggedPlatser} av ${totalPlatser} platser`;
     
-    // Inaktivera drag-knappen om inga nummer finns kvar
     if (availableNumbers.length === 0) {
         drawButton.disabled = true;
         drawButton.textContent = "Alla platser dragna!";
-        
-        // **BORTTAGEN KOD:** Vi tar bort logiken som visade/döljde resetButton.
-        // resetButton.style.display = 'block'; 
     } else {
         drawButton.disabled = false;
         drawButton.textContent = "Drag Nästa Plats";
-        
-        // **BORTTAGEN KOD:** Vi tar bort logiken som visade/döljde resetButton.
-        // resetButton.style.display = 'none'; 
     }
 }
 
 /**
  * Fyller på 'availableNumbers' arrayen och ritar ut bänkarna.
- * LADDAR SPARAD DATA FRÅN LOCALSTORAGE om den finns.
+ * Hanterar LocalStorage.
  */
 function initializeNumbersAndLayout() {
+    // VIKTIGT: Sätt till false för att kunna läsa värdet från select/input
+    maxPlatserInput.disabled = false; 
+
     const max = parseInt(maxPlatserInput.value); 
 
     if (isNaN(max) || max <= 0) {
-        // ... (Din befintliga felhantering)
+        classroomLayout.innerHTML = 'Välj en sal för att börja.';
+        availableNumbers = [];
+        updateUI();
         return;
     }
 
-    // -------------------------------------------------------------------
-    // NY LOGIK: LADDNING
+    // LADDNING av sparad data
     const drawnNumbers = laddaDragnaNummer(); 
     
-    // Anta att ALLA nummer är tillgängliga
     let allNumbers = Array.from({length: max}, (_, i) => i + 1);
-
-    // Filter bort de nummer som redan dragits
     availableNumbers = allNumbers.filter(n => !drawnNumbers.includes(n));
     
-    // -------------------------------------------------------------------
-
-    // Ritar ut den initiala layouten
-    renderDesks(max, drawnNumbers); // Skicka med listan över dragna nummer
+    // Ritar ut layouten och markerar dragna platser
+    renderDesks(max, drawnNumbers); 
     
-    // Om vi laddade sparad data, inaktivera input-fältet och uppdatera display
+    // Återställ display och inaktivera/aktivera baserat på laddad data
     if (drawnNumbers.length > 0) {
-        maxPlatserInput.disabled = true;
+        maxPlatserInput.disabled = true; // Inaktivera om sessionen är igång
         resultDisplay.textContent = "Session Återupptagen";
     } else {
         maxPlatserInput.disabled = false;
         resultDisplay.textContent = "?"; 
     }
 
-    lastDrawnNumber = null; // Vi vet inte vilket som var det sist dragna efter omladdning
+    lastDrawnNumber = null; 
     updateUI();
 }
 
-// ... (Hela koden för funktionen)
+/**
+ * Uppdaterar layouten och logiken baserat på vald sal.
+ */
+function handleClassroomChange() {
+    const selectedSal = classroomSelect.value;
+    const config = CLASSROOM_CONFIG[selectedSal];
+    
+    if (!config) return;
 
-// Huvudfunktionen för att dra ett slumpmässigt nummer
+    // Uppdatera globala variabler och dolda input-fältet
+    currentClassroom = selectedSal;
+    maxPlatserInput.value = config.max_seats;
+    
+    // Uppdatera CSS Grid-strukturen dynamiskt
+    classroomLayout.style.gridTemplateColumns = 
+        `repeat(${config.columns_per_row / 2}, 1fr) ${config.gang_column_width} repeat(${config.columns_per_row / 2}, 1fr)`;
+
+    // Rensa LocalStorage och återställ sessionen
+    localStorage.removeItem(STORAGE_KEY); 
+    
+    initializeNumbersAndLayout(); 
+}
+
+// --- HUVUDFUNKTIONER ---
+
+/**
+ * Huvudfunktionen för att dra ett slumpmässigt nummer.
+ */
 function drawRandomNumber() {
     if (availableNumbers.length > 0) {
-        // ... (Logik för att markera den tidigare bänken)
+        // Ta bort 'current-draw' från den senaste bänken och sätt den som 'drawn'
         if (lastDrawnNumber) {
             const lastDesk = document.getElementById(`desk-${lastDrawnNumber}`);
             if (lastDesk) {
@@ -131,109 +211,62 @@ function drawRandomNumber() {
             }
         }
 
-        // 1. Välj slumpmässig indexposition
+        // Välj slumpmässig indexposition och hämta nummer
         const randomIndex = Math.floor(Math.random() * availableNumbers.length);
         const drawnNumber = availableNumbers[randomIndex];
         
-        // ... (Logik för att visa resultatet och markera den nya bänken)
+        // Visa resultat och markera den nya bänken
         resultDisplay.textContent = drawnNumber;
         const currentDesk = document.getElementById(`desk-${drawnNumber}`);
         if (currentDesk) {
             currentDesk.classList.add('current-draw'); 
         }
         
-        // 2. Uppdatera tillstånd
         lastDrawnNumber = drawnNumber; 
         availableNumbers.splice(randomIndex, 1);
         
-        // -------------------------------------------------------------------
-        // NY LOGIK: BERÄKNA OCH SPARA DRAGNA NUMMER
-        
+        // Spara dragna nummer till LocalStorage
         const totalNumbers = parseInt(maxPlatserInput.value);
-        const allNumbers = Array.from({length: totalNumbers}, (_, i) => i + 1); // [1, 2, ..., max]
-        
-        // Ta fram de nummer som ÄR dragna (de som INTE finns i availableNumbers)
+        const allNumbers = Array.from({length: totalNumbers}, (_, i) => i + 1); 
         const drawnNumbers = allNumbers.filter(n => !availableNumbers.includes(n));
-        
         sparaDragnaNummer(drawnNumbers);
         
-        // -------------------------------------------------------------------
-        
         updateUI();
-
-        maxPlatserInput.disabled = true;
+        maxPlatserInput.disabled = true; // Förhindra ändring mitt i dragning
     }
 }
 
-// I script.js
+/**
+ * Återställer hela sessionen till starttillståndet.
+ */
 function resetSession() {
-    // 1. Ta bort den gula markeringen (om den finns)
+    // Ta bort den gula markeringen (om den finns)
     if (lastDrawnNumber) {
-        // ... (Din befintliga kod för att ta bort CSS-klasser)
+        const lastDesk = document.getElementById(`desk-${lastDrawnNumber}`);
+        if (lastDesk) {
+            lastDesk.classList.remove('current-draw');
+            lastDesk.classList.remove('drawn'); 
+        }
     }
     
-    // 2. Nollställ variabeln
     lastDrawnNumber = null; 
     
-    // -------------------------------------------------------------------
-    // NY LOGIK: RE NSA DATA FRÅN LOCALSTORAGE
+    // Rensa LocalStorage och återställ
     localStorage.removeItem(STORAGE_KEY);
-    // -------------------------------------------------------------------
-
-    // 3. Återaktivera input-fältet
-    maxPlatserInput.disabled = false; 
     
-    // 4. Initialiserar numren och ritar ut bänkarna på nytt
-    initializeNumbersAndLayout(); 
+    // Denna funktion kallar initializeNumbersAndLayout som aktiverar maxPlatserInput igen.
+    handleClassroomChange(); 
 }
 
 
-// --- Eventlyssnare ---
+// --- EVENTLYSSNARE OCH START ---
 
-// 1. Lyssna efter klick på Drag-knappen
 drawButton.addEventListener('click', drawRandomNumber);
-
-// 2. Lyssna efter klick på Återställ-knappen
 resetButton.addEventListener('click', resetSession);
+classroomSelect.addEventListener('change', handleClassroomChange);
 
-// 3. Lyssna efter ändringar i input-fältet för maxantalet
-maxPlatserInput.addEventListener('change', () => {
-    // Endast tillåtet att ändra maxantalet om ingen dragning har skett
-    if (!maxPlatserInput.disabled) {
-        initializeNumbersAndLayout(); 
-    }
+// Starta appen när sidan laddats klart
+document.addEventListener('DOMContentLoaded', () => {
+    populateClassroomSelect(); 
+    handleClassroomChange(); 
 });
-// Nyckeln vi använder i LocalStorage
-const STORAGE_KEY = 'elevPlatserDrawn';
-
-/**
- * Sparar listan över dragna nummer till LocalStorage.
- * @param {number[]} drawnList - Listan med de dragna numren.
- */
-function sparaDragnaNummer(drawnList) {
-    try {
-        localStorage.setItem(STORAGE_KEY, JSON.stringify(drawnList));
-    } catch (e) {
-        console.error("Kunde inte spara till LocalStorage", e);
-    }
-}
-
-/**
- * Laddar listan över dragna nummer från LocalStorage.
- * @returns {number[]} - Listan med dragna nummer, eller en tom array.
- */
-function laddaDragnaNummer() {
-    try {
-        const stored = localStorage.getItem(STORAGE_KEY);
-        // Returnera den sparade listan, annars en tom lista
-        return stored ? JSON.parse(stored) : [];
-    } catch (e) {
-        console.error("Kunde inte ladda från LocalStorage", e);
-        return [];
-    }
-}
-
-// 4. Starta appen när sidan laddats klart
-document.addEventListener('DOMContentLoaded', initializeNumbersAndLayout);
-
-
