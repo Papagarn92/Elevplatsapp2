@@ -3,23 +3,21 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Visuell Platsgenerator</title>
+    <title>Platsdelning</title>
     <link rel="stylesheet" href="style.css">
-    </head>
+</head>
 <body>
 
     <div class="container">
-        <h1>Visuell Platsdragning</h1>
+        <h1>Platsdragning med synliga bänkar</h1>
 
         <div class="controls">
-            <label for="classroomSelect">Välj Sal:</label>
-            <select id="classroomSelect"></select>
-
-            <input type="hidden" id="maxPlatserInput" value="26" min="1">
-
+            <label for="maxPlatserInput">Max antal platser (antal bänkar):</label>
+            <input type="number" id="maxPlatserInput" value="24" min="1">
+        
             <div class="button-group">
                 <button id="drawButton">Drag Nästa Plats</button>
-                <button id="resetButton">Återställ Bänkkarta</button>
+                <button id="resetButton">Återställ Bänkkarta</button> 
             </div>
         </div>
 
@@ -30,9 +28,6 @@
         </div>
         
         <div id="classroom-layout">
-            <div id="whiteboard">
-                KLASSRUMSTAVLA
-            </div>
             </div>
 
     </div>
