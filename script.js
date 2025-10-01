@@ -16,43 +16,43 @@ const classroomLayout = document.getElementById('classroom-layout');
  * @param {number} max - Det maximala numret (antalet bänkar).
  * @param {number[]} drawnList - Lista över nummer som redan är dragna.
  */
+// I script.js, ersätt din renderDesks() med denna:
+
 function renderDesks(max, drawnList = []) { 
-    classroomLayout.innerHTML = ''; 
+    // Hitta whiteboarden och se till att den är kvar (eller rita ut den)
+    const whiteboard = document.getElementById('whiteboard');
+    if (whiteboard) {
+        // Flyttar tavlan till toppen om den ritas om
+        classroomLayout.prepend(whiteboard);
+    }
+    
+    // Tömmer layouten på gamla bänkar (inte whiteboarden)
+    const oldDesks = classroomLayout.querySelectorAll('.desk');
+    oldDesks.forEach(desk => desk.remove());
+
+    const config = CLASSROOM_CONFIG[currentClassroom]; 
+    const seats_per_side = config.columns_per_row / 2; 
 
     for (let i = 1; i <= max; i++) {
         const desk = document.createElement('div');
         desk.classList.add('desk');
-        desk.id = `desk-${i}`;
-        desk.textContent = `Plats ${i}`;
+        // ... (din befintliga kod för id och textcontent) ...
 
         // ----------------------------------------------------
-        // KORRIGERAD LOGIK FÖR PLACERING MED 8 BÄNKAR/RAD:
+        // NY LOGIK: Beräkna vilken rad bänken ska ligga på
+        const positionInRow = (i % config.columns_per_row === 0) ? config.columns_per_row : (i % config.columns_per_row);
         
-        // 1. Ta reda på vilken position (1-8) bänken har i raden:
-        // Exempel: Bänk 8 ger position 8. Bänk 9 ger position 1. Bänk 13 ger position 5.
-        const positionInRow = (i % 8 === 0) ? 8 : (i % 8); 
+        // Beräkna radnumret. Varje full rad har 8 bänkar.
+        // Lägg till 1 för att tvinga bänkarna till rad 2 och nedåt (där tavlan ligger på rad 1)
+        const gridRowStart = Math.floor((i - 1) / config.columns_per_row) + 2; 
 
-        let gridColumnStart;
-        
-        if (positionInRow <= 4) {
-            // Bänkar 1, 2, 3, 4 startar på Grid-kolumn 1, 2, 3, eller 4.
-            gridColumnStart = positionInRow;
-        } else {
-            // Bänkar 5, 6, 7, 8 hoppar över gången (Grid-kolumn 5).
-            // De startar på Grid-kolumn 6, 7, 8, eller 9 (positionInRow + 1).
-            gridColumnStart = positionInRow + 1; 
-        }
+        // ----------------------------------------------------
+        // ... (din befintliga logik för gridColumnStart) ...
 
+        // Sätt både kolumn och rad
         desk.style.gridColumnStart = gridColumnStart;
-        // ----------------------------------------------------
-
-        // Markera dragna bänkar vid start (din befintliga logik)
-        const deskNumber = i;
-        if (lastDrawnNumber === deskNumber) {
-            desk.classList.add('current-draw');
-        } else if (drawnList.includes(deskNumber)) {
-            desk.classList.add('drawn');
-        }
+        desk.style.gridRowStart = gridRowStart; // Tvingar bänken till rätt rad
+        // ... (din befintliga logik för att markera dragna bänkar) ...
 
         classroomLayout.appendChild(desk);
     }
@@ -242,3 +242,4 @@ function laddaDragnaNummer() {
 
 // 4. Starta appen när sidan laddats klart
 document.addEventListener('DOMContentLoaded', initializeNumbersAndLayout);
+
