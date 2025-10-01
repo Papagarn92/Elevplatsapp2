@@ -102,18 +102,19 @@ button {
 
 /* I style.css */
 
+/* I style.css */
+
 /* Klassrumslayout och Bänkar */
 #classroom-layout {
     display: grid;
-    /* 9 kolumner: 4 bänkar, 1 gång (80px), 4 bänkar */
-    grid-template-columns: repeat(4, 1fr) 80px repeat(4, 1fr); 
+    /* FIX: Definierar 9 kolumner: 4 bänkkolumner, 1 gång (100px), 4 bänkkolumner */
+    grid-template-columns: repeat(4, 1fr) 100px repeat(4, 1fr); 
     gap: 10px; 
     padding: 20px;
     border: 4px dashed #adb5bd;
     border-radius: 10px;
     background-color: #f1f3f5;
-    /* KORRIGERING: Öka maxbredden för att matcha containern eller låt den vara 100% av containern */
-    max-width: 100%; /* Låter den fylla hela den nya, bredare containern */
+    max-width: 900px; /* Se till att den är tillräckligt bred */
 }
 
 /* Denna regel är viktig för att bänkarna ska ta 1 kolumn vardera */
