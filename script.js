@@ -1,55 +1,109 @@
-// Globala variabler för att hålla reda på tillstånd och element
+// Nyckeln vi använder i LocalStorage. Varje sal rensar gamla dragningar.
+const STORAGE_KEY = 'elevPlatserDrawn';
+
+// -------------------------------------------------------------------
+// KLASSRUMS KONFIGURATION
+const CLASSROOM_CONFIG = {
+    "Sal 302": {
+        max_seats: 24, 
+        columns_per_row: 8, // 4 bänkar + Gång + 4 bänkar
+        gang_column_width: "100px" 
+    },
+    "Sal 201": {
+        max_seats: 12, 
+        columns_per_row: 4, // 2 bänkar + Gång + 2 bänkar
+        gang_column_width: "50px"
+    },
+};
+// -------------------------------------------------------------------
+
+// Globala variabler för tillstånd
 let availableNumbers = []; 
 let lastDrawnNumber = null;
+let currentClassroom = "Sal 302"; // Standardvärde
 
 // Hämta DOM-element
-const maxPlatserInput = document.getElementById('maxPlatserInput');
+const classroomSelect = document.getElementById('classroomSelect'); 
+const maxPlatserInput = document.getElementById('maxPlatserInput'); 
 const drawButton = document.getElementById('drawButton');
 const resetButton = document.getElementById('resetButton');
 const resultDisplay = document.getElementById('resultDisplay');
 const remainingCount = document.getElementById('remainingCount');
 const classroomLayout = document.getElementById('classroom-layout');
 
+// --- LOCALSTORAGE FUNKTIONER ---
+
+function sparaDragnaNummer(drawnList) {
+    try {
+        localStorage.setItem(STORAGE_KEY, JSON.stringify(drawnList));
+    } catch (e) {
+        console.error("Kunde inte spara till LocalStorage", e);
+    }
+}
+
+function laddaDragnaNummer() {
+    try {
+        const stored = localStorage.getItem(STORAGE_KEY);
+        return stored ? JSON.parse(stored) : [];
+    } catch (e) {
+        console.error("Kunde inte ladda från LocalStorage", e);
+        return [];
+    }
+}
+
+// --- INITIALISERING OCH LAYOUT FUNKTIONER ---
+
+function populateClassroomSelect() {
+    for (const name in CLASSROOM_CONFIG) {
+        const option = document.createElement('option');
+        option.value = name;
+        option.textContent = name;
+        classroomSelect.appendChild(option);
+    }
+}
+
 /**
- * Ritar ut de visuella bänkarna i klassrummet baserat på maxantalet.
- * KORRIGERAD: Tvingar layouten till 8 bänkar per rad (4 + Gång + 4).
- * @param {number} max - Det maximala numret (antalet bänkar).
- * @param {number[]} drawnList - Lista över nummer som redan är dragna.
+ * Ritar ut whiteboard och bänkar.
  */
-// I script.js
 function renderDesks(max, drawnList = []) { 
-    // Rensar ENDAST gamla bänkar (inte Whiteboarden som är i samma container i HTML)
     classroomLayout.innerHTML = ''; 
 
     const config = CLASSROOM_CONFIG[currentClassroom]; 
-    // Antal bänkar på ena sidan av mittgången
-    const seats_per_side = config.columns_per_row / 2; 
+    const seats_per_row = config.columns_per_row;
+    // VARIABELN DEKLARERAS HÄR FÖR KORREKT OMFÅNG
+    const seats_per_side = seats_per_row / 2; 
+    
+    // --- 1. RITA BÄNKARNA ---
+    let rowCounter = 1; 
+    let columnCounter = 1;
 
     for (let i = 1; i <= max; i++) {
         const desk = document.createElement('div');
         desk.classList.add('desk');
         
-        // 1. Visuellt Nummer (Omvänt)
+        // Omvänd numrering för bänken
         const reversedDeskNumber = max - i + 1; 
         desk.id = `desk-${reversedDeskNumber}`;
         desk.textContent = `Plats ${reversedDeskNumber}`;
 
-        // 2. Grid-Positionering (Baserat på ordning 1, 2, 3, ...)
-        // Beräknar position i raden (t.ex. 1-8 för Sal 302)
-        const positionInRow = (i % config.columns_per_row === 0) ? config.columns_per_row : (i % config.columns_per_row); 
-
+        // 1. Positionera kolumn
         let gridColumnStart;
-        
-        if (positionInRow <= seats_per_side) {
-            // Första halvan (t.ex. bänk 1-4)
-            gridColumnStart = positionInRow;
+        if (columnCounter <= seats_per_side) {
+            gridColumnStart = columnCounter;
         } else {
-            // Andra halvan hoppar över gången (+1)
-            // Exempel: Position 5 startar på kolumn 6.
-            gridColumnStart = positionInRow + 1; 
+            // Hoppa över mittgången (+1)
+            gridColumnStart = columnCounter + 1; 
         }
 
         desk.style.gridColumnStart = gridColumnStart;
+        desk.style.gridRowStart = rowCounter; 
+
+        // 2. Uppdatera räknarna för nästa bänk
+        columnCounter++;
+        if (columnCounter > seats_per_row) {
+            columnCounter = 1; 
+            rowCounter++;      
+        }
         
         // Markering av dragna bänkar
         const deskNumber = reversedDeskNumber; 
@@ -61,10 +115,25 @@ function renderDesks(max, drawnList = []) {
 
         classroomLayout.appendChild(desk);
     }
+    
+    // --- 2. RITA WHITEBOARDEN (UNDER BÄNKARNA PÅ VÄNSTER SIDA) ---
+    const whiteboard = document.createElement('div');
+    whiteboard.id = 'whiteboard';
+    whiteboard.textContent = 'WHITEBOARD'; 
+
+    const lastRow = rowCounter; 
+
+    // Positionera tavlan på raden efter sista bänken
+    whiteboard.style.gridRowStart = lastRow; 
+    // Tavlan startar på kolumn 1 och spänner över antalet bänkar per sida (t.ex. 4)
+    whiteboard.style.gridColumnStart = 1; 
+    whiteboard.style.gridColumnEnd = 'span ' + seats_per_side;
+
+    classroomLayout.appendChild(whiteboard);
 }
+
 /**
  * Uppdaterar texten som visar antalet återstående platser och knappar.
- * NU: Reset-knappen är ALLTID synlig.
  */
 function updateUI() {
     const totalPlatser = parseInt(maxPlatserInput.value);
@@ -72,29 +141,19 @@ function updateUI() {
 
     remainingCount.textContent = `Draget: ${draggedPlatser} av ${totalPlatser} platser`;
     
-    // Inaktivera drag-knappen om inga nummer finns kvar
     if (availableNumbers.length === 0) {
         drawButton.disabled = true;
         drawButton.textContent = "Alla platser dragna!";
-        
-        // **BORTTAGEN KOD:** Vi tar bort logiken som visade/döljde resetButton.
-        // resetButton.style.display = 'block'; 
     } else {
         drawButton.disabled = false;
         drawButton.textContent = "Drag Nästa Plats";
-        
-        // **BORTTAGEN KOD:** Vi tar bort logiken som visade/döljde resetButton.
-        // resetButton.style.display = 'none'; 
     }
 }
 
 /**
- * Fyller på 'availableNumbers' arrayen och ritar ut bänkarna.
- * LADDAR SPARAD DATA FRÅN LOCALSTORAGE om den finns.
+ * Hanterar LocalStorage och numreringslogiken.
  */
-// I script.js
 function initializeNumbersAndLayout() {
-    // VIKTIGT: Sätt till false för att kunna läsa värdet från select/input
     maxPlatserInput.disabled = false; 
 
     const max = parseInt(maxPlatserInput.value); 
@@ -106,21 +165,12 @@ function initializeNumbersAndLayout() {
         return;
     }
 
-    // -------------------------------------------------------------------
-    // KORRIGERAD LOGIK: Skapa numren i omvänd ordning (max, max-1, ..., 1)
     const drawnNumbers = laddaDragnaNummer(); 
-    
-    // Skapa numren i fallande ordning (t.ex. [26, 25, 24, ..., 1])
-    let allNumbers = Array.from({length: max}, (_, i) => max - i);
-
-    // Filter bort de nummer som redan dragits
+    let allNumbers = Array.from({length: max}, (_, i) => max - i + 1); 
     availableNumbers = allNumbers.filter(n => !drawnNumbers.includes(n));
-    // -------------------------------------------------------------------
-
-    // Ritar ut layouten och markerar dragna platser
+    
     renderDesks(max, drawnNumbers); 
     
-    // Återställ display och inaktivera/aktivera baserat på laddad data
     if (drawnNumbers.length > 0) {
         maxPlatserInput.disabled = true; 
         resultDisplay.textContent = "Session Återupptagen";
@@ -133,12 +183,34 @@ function initializeNumbersAndLayout() {
     updateUI();
 }
 
-// ... (Hela koden för funktionen)
+/**
+ * Uppdaterar layouten och logiken baserat på vald sal.
+ */
+function handleClassroomChange() {
+    const selectedSal = classroomSelect.value;
+    const config = CLASSROOM_CONFIG[selectedSal];
+    
+    if (!config) return;
 
-// Huvudfunktionen för att dra ett slumpmässigt nummer
+    currentClassroom = selectedSal;
+    maxPlatserInput.value = config.max_seats;
+    
+    // UTRÄKNINGEN SKER HÄR OCH ANVÄNDS DIREKT
+    const seats_per_side = config.columns_per_row / 2;
+
+    // Uppdatera CSS Grid-strukturen dynamiskt
+    classroomLayout.style.gridTemplateColumns = 
+        `repeat(${seats_per_side}, 1fr) ${config.gang_column_width} repeat(${seats_per_side}, 1fr)`;
+
+    localStorage.removeItem(STORAGE_KEY); 
+    initializeNumbersAndLayout(); 
+}
+
+/**
+ * Huvudfunktionen för att dra ett slumpmässigt nummer.
+ */
 function drawRandomNumber() {
     if (availableNumbers.length > 0) {
-        // ... (Logik för att markera den tidigare bänken)
         if (lastDrawnNumber) {
             const lastDesk = document.getElementById(`desk-${lastDrawnNumber}`);
             if (lastDesk) {
@@ -147,124 +219,56 @@ function drawRandomNumber() {
             }
         }
 
-        // 1. Välj slumpmässig indexposition
         const randomIndex = Math.floor(Math.random() * availableNumbers.length);
         const drawnNumber = availableNumbers[randomIndex];
         
-        // ... (Logik för att visa resultatet och markera den nya bänken)
         resultDisplay.textContent = drawnNumber;
         const currentDesk = document.getElementById(`desk-${drawnNumber}`);
         if (currentDesk) {
             currentDesk.classList.add('current-draw'); 
         }
         
-        // 2. Uppdatera tillstånd
         lastDrawnNumber = drawnNumber; 
         availableNumbers.splice(randomIndex, 1);
         
-        // -------------------------------------------------------------------
-        // NY LOGIK: BERÄKNA OCH SPARA DRAGNA NUMMER
-        
+        // Spara dragna nummer till LocalStorage
         const totalNumbers = parseInt(maxPlatserInput.value);
-        const allNumbers = Array.from({length: totalNumbers}, (_, i) => i + 1); // [1, 2, ..., max]
-        
-        // Ta fram de nummer som ÄR dragna (de som INTE finns i availableNumbers)
+        const allNumbers = Array.from({length: totalNumbers}, (_, i) => totalNumbers - i + 1); 
         const drawnNumbers = allNumbers.filter(n => !availableNumbers.includes(n));
-        
         sparaDragnaNummer(drawnNumbers);
         
-        // -------------------------------------------------------------------
-        
         updateUI();
-
         maxPlatserInput.disabled = true;
     }
 }
 
-// I script.js
+/**
+ * Återställer hela sessionen till starttillståndet.
+ */
 function resetSession() {
-    // 1. Ta bort den gula markeringen (om den finns)
     if (lastDrawnNumber) {
-        // ... (Din befintliga kod för att ta bort CSS-klasser)
+        const lastDesk = document.getElementById(`desk-${lastDrawnNumber}`);
+        if (lastDesk) {
+            lastDesk.classList.remove('current-draw');
+            lastDesk.classList.remove('drawn'); 
+        }
     }
     
-    // 2. Nollställ variabeln
     lastDrawnNumber = null; 
-    
-    // -------------------------------------------------------------------
-    // NY LOGIK: RE NSA DATA FRÅN LOCALSTORAGE
     localStorage.removeItem(STORAGE_KEY);
-    // -------------------------------------------------------------------
-
-    // 3. Återaktivera input-fältet
-    maxPlatserInput.disabled = false; 
     
-    // 4. Initialiserar numren och ritar ut bänkarna på nytt
-    initializeNumbersAndLayout(); 
+    handleClassroomChange(); 
 }
 
 
-// --- Eventlyssnare ---
+// --- EVENTLYSSNARE OCH START ---
 
-// 1. Lyssna efter klick på Drag-knappen
 drawButton.addEventListener('click', drawRandomNumber);
-
-// 2. Lyssna efter klick på Återställ-knappen
 resetButton.addEventListener('click', resetSession);
+classroomSelect.addEventListener('change', handleClassroomChange);
 
-// 3. Lyssna efter ändringar i input-fältet för maxantalet
-maxPlatserInput.addEventListener('change', () => {
-    // Endast tillåtet att ändra maxantalet om ingen dragning har skett
-    if (!maxPlatserInput.disabled) {
-        initializeNumbersAndLayout(); 
-    }
+// Starta appen när sidan laddats klart
+document.addEventListener('DOMContentLoaded', () => {
+    populateClassroomSelect(); 
+    handleClassroomChange(); 
 });
-// Nyckeln vi använder i LocalStorage
-const STORAGE_KEY = 'elevPlatserDrawn';
-
-/**
- * Sparar listan över dragna nummer till LocalStorage.
- * @param {number[]} drawnList - Listan med de dragna numren.
- */
-function sparaDragnaNummer(drawnList) {
-    try {
-        localStorage.setItem(STORAGE_KEY, JSON.stringify(drawnList));
-    } catch (e) {
-        console.error("Kunde inte spara till LocalStorage", e);
-    }
-}
-
-/**
- * Laddar listan över dragna nummer från LocalStorage.
- * @returns {number[]} - Listan med dragna nummer, eller en tom array.
- */
-function laddaDragnaNummer() {
-    try {
-        const stored = localStorage.getItem(STORAGE_KEY);
-        // Returnera den sparade listan, annars en tom lista
-        return stored ? JSON.parse(stored) : [];
-    } catch (e) {
-        console.error("Kunde inte ladda från LocalStorage", e);
-        return [];
-    }
-}
-// I script.js
-function handleClassroomChange() {
-    // ... (resten av koden) ...
-    
-    // Uppdatera CSS Grid-strukturen dynamiskt
-    classroomLayout.style.gridTemplateColumns = 
-        `repeat(${config.columns_per_row / 2}, 1fr) ${config.gang_column_width} repeat(${config.columns_per_row / 2}, 1fr)`;
-
-    // Rensa LocalStorage och återställ sessionen
-    localStorage.removeItem(STORAGE_KEY); 
-    
-    // Denna funktion ritar ut bänkarna
-    initializeNumbersAndLayout(); 
-}
-
-// 4. Starta appen när sidan laddats klart
-document.addEventListener('DOMContentLoaded', initializeNumbersAndLayout);
-
-
-
