@@ -18,43 +18,40 @@ const classroomLayout = document.getElementById('classroom-layout');
  */
 // I script.js
 function renderDesks(max, drawnList = []) { 
+    // Rensar ENDAST gamla bänkar (inte Whiteboarden som är i samma container i HTML)
     classroomLayout.innerHTML = ''; 
 
     const config = CLASSROOM_CONFIG[currentClassroom]; 
+    // Antal bänkar på ena sidan av mittgången
     const seats_per_side = config.columns_per_row / 2; 
 
     for (let i = 1; i <= max; i++) {
         const desk = document.createElement('div');
         desk.classList.add('desk');
         
-        // ----------------------------------------------------
-        // VISUELLT NUMMER: Räknar baklänges (t.ex. 26, 25, 24...)
+        // 1. Visuellt Nummer (Omvänt)
         const reversedDeskNumber = max - i + 1; 
         desk.id = `desk-${reversedDeskNumber}`;
         desk.textContent = `Plats ${reversedDeskNumber}`;
-        // ----------------------------------------------------
 
-        // ----------------------------------------------------
-        // GRID-POSITIONERING: Använder det enkla loop-indexet (i) för att räkna position
-        
-        // 1. Ta reda på vilken position (1 till columns_per_row) bänken har i raden:
-        // Vi använder 'i' för att få ordningen 1, 2, 3, 4, 5, 6, 7, 8, 1, 2, 3, ...
+        // 2. Grid-Positionering (Baserat på ordning 1, 2, 3, ...)
+        // Beräknar position i raden (t.ex. 1-8 för Sal 302)
         const positionInRow = (i % config.columns_per_row === 0) ? config.columns_per_row : (i % config.columns_per_row); 
 
         let gridColumnStart;
         
         if (positionInRow <= seats_per_side) {
-            // Bänkar i första halvan
+            // Första halvan (t.ex. bänk 1-4)
             gridColumnStart = positionInRow;
         } else {
-            // Bänkar i andra halvan hoppar över gången (+1)
+            // Andra halvan hoppar över gången (+1)
+            // Exempel: Position 5 startar på kolumn 6.
             gridColumnStart = positionInRow + 1; 
         }
 
         desk.style.gridColumnStart = gridColumnStart;
-        // ----------------------------------------------------
-
-        // Markera dragna bänkar vid start (använder det omvända numret för kontroll)
+        
+        // Markering av dragna bänkar
         const deskNumber = reversedDeskNumber; 
         if (lastDrawnNumber === deskNumber) {
             desk.classList.add('current-draw');
@@ -65,7 +62,6 @@ function renderDesks(max, drawnList = []) {
         classroomLayout.appendChild(desk);
     }
 }
-
 /**
  * Uppdaterar texten som visar antalet återstående platser och knappar.
  * NU: Reset-knappen är ALLTID synlig.
@@ -252,8 +248,23 @@ function laddaDragnaNummer() {
         return [];
     }
 }
+// I script.js
+function handleClassroomChange() {
+    // ... (resten av koden) ...
+    
+    // Uppdatera CSS Grid-strukturen dynamiskt
+    classroomLayout.style.gridTemplateColumns = 
+        `repeat(${config.columns_per_row / 2}, 1fr) ${config.gang_column_width} repeat(${config.columns_per_row / 2}, 1fr)`;
+
+    // Rensa LocalStorage och återställ sessionen
+    localStorage.removeItem(STORAGE_KEY); 
+    
+    // Denna funktion ritar ut bänkarna
+    initializeNumbersAndLayout(); 
+}
 
 // 4. Starta appen när sidan laddats klart
 document.addEventListener('DOMContentLoaded', initializeNumbersAndLayout);
+
 
 
