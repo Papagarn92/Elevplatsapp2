@@ -28,27 +28,33 @@ function renderDesks(max, drawnList = []) {
         desk.classList.add('desk');
         
         // ----------------------------------------------------
-        // KORRIGERAD NUMMER-TILLDELNING:
-        // Tilldela bänknummer i omvänd ordning (t.ex. bänk i=1 får numret 26)
+        // VISUELLT NUMMER: Räknar baklänges (t.ex. 26, 25, 24...)
         const reversedDeskNumber = max - i + 1; 
         desk.id = `desk-${reversedDeskNumber}`;
         desk.textContent = `Plats ${reversedDeskNumber}`;
         // ----------------------------------------------------
 
+        // ----------------------------------------------------
+        // GRID-POSITIONERING: Använder det enkla loop-indexet (i) för att räkna position
+        
         // 1. Ta reda på vilken position (1 till columns_per_row) bänken har i raden:
+        // Vi använder 'i' för att få ordningen 1, 2, 3, 4, 5, 6, 7, 8, 1, 2, 3, ...
         const positionInRow = (i % config.columns_per_row === 0) ? config.columns_per_row : (i % config.columns_per_row); 
 
         let gridColumnStart;
         
         if (positionInRow <= seats_per_side) {
+            // Bänkar i första halvan
             gridColumnStart = positionInRow;
         } else {
+            // Bänkar i andra halvan hoppar över gången (+1)
             gridColumnStart = positionInRow + 1; 
         }
 
         desk.style.gridColumnStart = gridColumnStart;
-        
-        // Markera dragna bänkar vid start (använder det nya omvända numret)
+        // ----------------------------------------------------
+
+        // Markera dragna bänkar vid start (använder det omvända numret för kontroll)
         const deskNumber = reversedDeskNumber; 
         if (lastDrawnNumber === deskNumber) {
             desk.classList.add('current-draw');
@@ -249,4 +255,5 @@ function laddaDragnaNummer() {
 
 // 4. Starta appen när sidan laddats klart
 document.addEventListener('DOMContentLoaded', initializeNumbersAndLayout);
+
 
