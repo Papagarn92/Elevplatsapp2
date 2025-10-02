@@ -16,38 +16,40 @@ const classroomLayout = document.getElementById('classroom-layout');
  * @param {number} max - Det maximala numret (antalet bänkar).
  * @param {number[]} drawnList - Lista över nummer som redan är dragna.
  */
+// I script.js
 function renderDesks(max, drawnList = []) { 
     classroomLayout.innerHTML = ''; 
+
+    const config = CLASSROOM_CONFIG[currentClassroom]; 
+    const seats_per_side = config.columns_per_row / 2; 
 
     for (let i = 1; i <= max; i++) {
         const desk = document.createElement('div');
         desk.classList.add('desk');
-        desk.id = `desk-${i}`;
-        desk.textContent = `Plats ${i}`;
-
-        // ----------------------------------------------------
-        // KORRIGERAD LOGIK FÖR PLACERING MED 8 BÄNKAR/RAD:
         
-        // 1. Ta reda på vilken position (1-8) bänken har i raden:
-        // Exempel: Bänk 8 ger position 8. Bänk 9 ger position 1. Bänk 13 ger position 5.
-        const positionInRow = (i % 8 === 0) ? 8 : (i % 8); 
+        // ----------------------------------------------------
+        // KORRIGERAD NUMMER-TILLDELNING:
+        // Tilldela bänknummer i omvänd ordning (t.ex. bänk i=1 får numret 26)
+        const reversedDeskNumber = max - i + 1; 
+        desk.id = `desk-${reversedDeskNumber}`;
+        desk.textContent = `Plats ${reversedDeskNumber}`;
+        // ----------------------------------------------------
+
+        // 1. Ta reda på vilken position (1 till columns_per_row) bänken har i raden:
+        const positionInRow = (i % config.columns_per_row === 0) ? config.columns_per_row : (i % config.columns_per_row); 
 
         let gridColumnStart;
         
-        if (positionInRow <= 4) {
-            // Bänkar 1, 2, 3, 4 startar på Grid-kolumn 1, 2, 3, eller 4.
+        if (positionInRow <= seats_per_side) {
             gridColumnStart = positionInRow;
         } else {
-            // Bänkar 5, 6, 7, 8 hoppar över gången (Grid-kolumn 5).
-            // De startar på Grid-kolumn 6, 7, 8, eller 9 (positionInRow + 1).
             gridColumnStart = positionInRow + 1; 
         }
 
         desk.style.gridColumnStart = gridColumnStart;
-        // ----------------------------------------------------
-
-        // Markera dragna bänkar vid start (din befintliga logik)
-        const deskNumber = i;
+        
+        // Markera dragna bänkar vid start (använder det nya omvända numret)
+        const deskNumber = reversedDeskNumber; 
         if (lastDrawnNumber === deskNumber) {
             desk.classList.add('current-draw');
         } else if (drawnList.includes(deskNumber)) {
@@ -88,39 +90,44 @@ function updateUI() {
  * Fyller på 'availableNumbers' arrayen och ritar ut bänkarna.
  * LADDAR SPARAD DATA FRÅN LOCALSTORAGE om den finns.
  */
+// I script.js
 function initializeNumbersAndLayout() {
+    // VIKTIGT: Sätt till false för att kunna läsa värdet från select/input
+    maxPlatserInput.disabled = false; 
+
     const max = parseInt(maxPlatserInput.value); 
 
     if (isNaN(max) || max <= 0) {
-        // ... (Din befintliga felhantering)
+        classroomLayout.innerHTML = 'Välj en sal för att börja.';
+        availableNumbers = [];
+        updateUI();
         return;
     }
 
     // -------------------------------------------------------------------
-    // NY LOGIK: LADDNING
+    // KORRIGERAD LOGIK: Skapa numren i omvänd ordning (max, max-1, ..., 1)
     const drawnNumbers = laddaDragnaNummer(); 
     
-    // Anta att ALLA nummer är tillgängliga
-    let allNumbers = Array.from({length: max}, (_, i) => i + 1);
+    // Skapa numren i fallande ordning (t.ex. [26, 25, 24, ..., 1])
+    let allNumbers = Array.from({length: max}, (_, i) => max - i);
 
     // Filter bort de nummer som redan dragits
     availableNumbers = allNumbers.filter(n => !drawnNumbers.includes(n));
-    
     // -------------------------------------------------------------------
 
-    // Ritar ut den initiala layouten
-    renderDesks(max, drawnNumbers); // Skicka med listan över dragna nummer
+    // Ritar ut layouten och markerar dragna platser
+    renderDesks(max, drawnNumbers); 
     
-    // Om vi laddade sparad data, inaktivera input-fältet och uppdatera display
+    // Återställ display och inaktivera/aktivera baserat på laddad data
     if (drawnNumbers.length > 0) {
-        maxPlatserInput.disabled = true;
+        maxPlatserInput.disabled = true; 
         resultDisplay.textContent = "Session Återupptagen";
     } else {
         maxPlatserInput.disabled = false;
         resultDisplay.textContent = "?"; 
     }
 
-    lastDrawnNumber = null; // Vi vet inte vilket som var det sist dragna efter omladdning
+    lastDrawnNumber = null; 
     updateUI();
 }
 
@@ -242,3 +249,4 @@ function laddaDragnaNummer() {
 
 // 4. Starta appen när sidan laddats klart
 document.addEventListener('DOMContentLoaded', initializeNumbersAndLayout);
+
