@@ -7,33 +7,30 @@
     <link rel="stylesheet" href="style.css">
 </head>
 <body>
-
     <div class="container">
         <h1>Visuell Platsdragning</h1>
-
         <div class="controls">
             <label for="classroomSelect">Välj Sal:</label>
             <select id="classroomSelect"></select>
-
-            <input type="hidden" id="maxPlatserInput" value="26" min="1">
+            
+            <!-- Denna sektion är nu tom och kommer att döljas/visas av JS -->
+            <div id="name-container" class="name-controls">
+            </div>
 
             <div class="button-group">
-                <button id="drawButton">Drag Nästa Plats</button>
-                <button id="resetButton">Återställ Bänkkarta</button>
+                <button id="drawButton">Placera Alla Elever</button>
+                <button id="resetButton">Återställ Karta</button>
             </div>
         </div>
 
         <div id="resultArea">
-            <p>Dragen plats:</p>
+            <p>Status:</p>
             <div id="resultDisplay">?</div>
             <p id="remainingCount"></p>
         </div>
         
-        <div id="classroom-layout">
-            </div>
-
+        <div id="classroom-layout"></div>
     </div>
-
     <script src="script.js"></script>
 </body>
 </html>
