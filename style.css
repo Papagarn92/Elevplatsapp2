@@ -1,150 +1,186 @@
+@import url('https://fonts.googleapis.com/css2?family=Poppins:wght@400;600;700&display=swap');
+
 body {
-    font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+    font-family: 'Poppins', sans-serif;
     display: flex;
     justify-content: center;
     align-items: flex-start;
     min-height: 100vh;
     margin: 0;
     padding: 20px;
-    background-color: #e9ecef;
+    background: linear-gradient(135deg, #f5f7fa 0%, #c3cfe2 100%);
 }
 
 .container {
-    background-color: #fff;
-    padding: 30px;
-    border-radius: 12px;
-    box-shadow: 0 8px 20px rgba(0, 0, 0, 0.15);
+    background-color: #ffffff;
+    padding: 30px 40px;
+    border-radius: 16px;
+    box-shadow: 0 10px 30px rgba(0, 0, 0, 0.1);
     width: 100%;
-    max-width: 950px; 
+    max-width: 950px;
     text-align: center;
+    border: 1px solid rgba(255, 255, 255, 0.5);
 }
 
 h1 {
-    color: #007bff;
+    background: -webkit-linear-gradient(45deg, #007bff, #0056b3);
+    -webkit-background-clip: text;
+    background-clip: text; /* KORRIGERAD DEL */
+    -webkit-text-fill-color: transparent;
+    font-weight: 700;
     margin-bottom: 25px;
 }
 
-/* Kontroller och Input/Select */
 .controls {
     margin-bottom: 30px;
-    padding: 15px;
-    border: 1px solid #dee2e6;
-    border-radius: 8px;
+    padding: 20px;
+    border: none;
+    border-radius: 12px;
     background-color: #f8f9fa;
 }
 
 .controls label {
     display: block;
-    margin-bottom: 5px;
+    margin-bottom: 8px;
     font-weight: 600;
+    color: #495057;
 }
 
 .controls select {
-    padding: 8px;
-    border: 1px solid #ced4da;
-    border-radius: 4px;
+    padding: 10px;
+    border: 2px solid #ced4da;
+    border-radius: 8px;
     width: 100%;
     margin-bottom: 15px;
+    background-color: #fff;
+    transition: border-color 0.3s;
+}
+
+.controls select:focus {
+    outline: none;
+    border-color: #007bff;
 }
 
 .button-group {
     display: flex;
-    gap: 10px; 
-    margin-top: 15px;
+    gap: 15px;
+    margin-top: 20px;
 }
 
 button {
-    padding: 10px 15px;
+    padding: 12px 15px;
     border: none;
-    border-radius: 5px;
+    border-radius: 8px;
     cursor: pointer;
     font-size: 16px;
-    transition: background-color 0.3s, opacity 0.3s;
+    font-weight: 600;
+    transition: all 0.2s ease-in-out;
 }
 
 #drawButton {
     flex-grow: 1;
-    background-color: #28a745;
+    background: linear-gradient(45deg, #28a745, #218838);
     color: white;
+    box-shadow: 0 4px 15px rgba(40, 167, 69, 0.2);
 }
 
 #drawButton:hover:not(:disabled) {
-    background-color: #1e7e34;
+    transform: translateY(-2px);
+    box-shadow: 0 6px 20px rgba(40, 167, 69, 0.3);
+}
+
+#drawButton:active:not(:disabled) {
+    transform: translateY(0);
 }
 
 #drawButton:disabled {
-    background-color: #90c8a0;
+    background: #a3d9b1;
     cursor: not-allowed;
+    opacity: 0.7;
 }
 
 #resetButton {
-    width: 100px;
-    background-color: #dc3545;
+    width: 120px;
+    background: linear-gradient(45deg, #dc3545, #c82333);
     color: white;
+    box-shadow: 0 4px 15px rgba(220, 53, 69, 0.2);
 }
 
-/* Resultatdisplay */
+#resetButton:hover {
+    transform: translateY(-2px);
+    box-shadow: 0 6px 20px rgba(220, 53, 69, 0.3);
+}
+
 #resultDisplay {
-    font-size: 72px;
-    font-weight: bold;
+    font-size: 80px;
+    font-weight: 700;
     color: #007bff;
-    min-height: 80px;
+    min-height: 90px;
     display: flex;
     align-items: center;
     justify-content: center;
     margin-top: 10px;
+    text-shadow: 0 4px 10px rgba(0, 123, 255, 0.1);
 }
 
-/* Klassrumslayout och Bänkar */
+@keyframes draw-animation {
+    0% { transform: scale(0.5); opacity: 0; }
+    70% { transform: scale(1.1); opacity: 1; }
+    100% { transform: scale(1); opacity: 1; }
+}
+
+.animate-draw {
+    animation: draw-animation 0.5s ease-out;
+}
+
 #classroom-layout {
     display: grid;
-    /* grid-template-columns sätts i JavaScript */
-    gap: 10px;
-    padding: 20px;
-    border: 4px dashed #adb5bd;
-    border-radius: 10px;
-    background-color: #f1f3f5;
-    
-    position: relative; 
+    gap: 12px;
+    padding: 25px;
+    border: 2px solid #dee2e6;
+    border-radius: 12px;
+    background-color: #f8f9fa;
+    position: relative;
 }
 
 .desk {
-    grid-column: span 1; 
-    background-color: #e9ecef;
-    border: 2px solid #495057;
-    border-radius: 6px;
+    background-color: #fff;
+    border: 1px solid #ced4da;
+    border-bottom: 4px solid #adb5bd;
+    border-radius: 8px;
     padding: 15px 5px;
     text-align: center;
-    font-weight: bold;
+    font-weight: 600;
+    color: #495057;
     transition: all 0.3s ease;
     box-shadow: 0 2px 4px rgba(0, 0, 0, 0.05);
 }
 
 .desk.drawn {
-    background-color: #28a745; 
+    background-color: #28a745;
     color: white;
     border-color: #1e7e34;
 }
 
 .desk.current-draw {
-    background-color: #ffc107; 
+    background-color: #ffc107;
     color: #333;
     border-color: #d39e00;
-    transform: scale(1.1); 
+    transform: scale(1.1);
+    box-shadow: 0 8px 25px rgba(255, 193, 7, 0.4);
 }
 
-/* Whiteboard Positionering (Nu under bänkarna) */
 #whiteboard {
-    background-color: #333333; 
-    color: #f7f7f7;
-    border: 5px solid #6d4c41; 
+    background-color: #fdfdfd;
+    color: #333;
+    border: 1px solid #adb5bd;
+    border-bottom: 6px solid #6c757d;
+    border-right: 4px solid #ced4da;
     border-radius: 5px;
     padding: 10px;
-    font-size: 24px;
-    font-weight: bold;
+    font-size: 20px;
+    font-weight: 600;
     text-align: center;
-    
-    /* Grid-positionering sätts i JS */
-    grid-row: auto; 
+    grid-row: auto;
     grid-column: auto;
 }
