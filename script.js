@@ -167,6 +167,9 @@ function handleClassroomChange() {
     if (!config) return;
     currentClassroom = selectedSal;
     
+    // NY RAD: Lägger till en klass på body för CSS-anpassning
+    document.body.className = `sal-${selectedSal.replace(/\s+/g, '-')}`;
+    
     nameContainer.style.display = 'none';
 
     if (config.grid_template_columns) { classroomLayout.style.gridTemplateColumns = config.grid_template_columns; }
@@ -248,4 +251,5 @@ document.addEventListener('DOMContentLoaded', () => {
     populateClassroomSelect();
     handleClassroomChange();
 });
+
 
