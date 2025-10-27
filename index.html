@@ -3,34 +3,32 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Visuell Platsgenerator</title>
+    <title>Platsdelning för elever</title>
     <link rel="stylesheet" href="style.css">
 </head>
 <body>
     <div class="container">
-        <h1>Visuell Platsdragning</h1>
+        <h1>Platsdelning för elever</h1>
         <div class="controls">
             <label for="classroomSelect">Välj Sal:</label>
-            <select id="classroomSelect"></select>
-            
-            <!-- Denna sektion är nu tom och kommer att döljas/visas av JS -->
+            <select id="classroomSelect"></select> <!-- Fylls av JS -->
+
+            <!-- Rullista för klasser, visas/döljs av JS -->
             <div id="name-container" class="name-controls">
+                <label for="classSelect">Välj Klass:</label>
+                <select id="classSelect"></select> <!-- Fylls av JS -->
             </div>
 
             <div class="button-group">
-                <button id="drawButton">Placera Alla Elever</button>
+                 <!-- Texten sätts dynamiskt av JS -->
+                <button id="drawButton">Placera Elever</button>
                 <button id="resetButton">Återställ Karta</button>
             </div>
         </div>
 
-        <div id="resultArea">
-            <p>Status:</p>
-            <div id="resultDisplay">?</div>
-            <p id="remainingCount"></p>
-        </div>
-        
-        <div id="classroom-layout"></div>
+        <div id="classroom-layout"></div> <!-- Fylls av JS -->
     </div>
     <script src="script.js"></script>
 </body>
 </html>
+
