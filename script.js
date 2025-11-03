@@ -22,23 +22,26 @@ const STUDENT_LIST_EE25B = [
     "Engjull", "Dominic", "Emil"
 ];
 
+// NYTT: Klasslista för TE24
+const STUDENT_LIST_TE24 = [
+    "Hamza", "Ludvig", "Julian", "Kamil", "Taha", "Melvin", "Emma",
+    "Sebastian", "Almin", "Mani", "Knut", "Jibril", "Mojtaba", "Otto",
+    "Kevin", "Jonathan", "Odai", "Lavin", "Stefan"
+];
+
 // Samlar alla klasslistor
 const CLASS_LISTS = {
     "IT24A": STUDENT_LIST_IT24A,
     "EE25A": STUDENT_LIST_EE25A,
-    "EE25B": STUDENT_LIST_EE25B
+    "EE25B": STUDENT_LIST_EE25B,
+    "TE24": STUDENT_LIST_TE24 // NYTT: Klassen tillagd i huvudobjektet
 };
 // -------------------------------------------------------------------
 
-// KLASSRUMS KONFIGURATION (Med korrekt gång mellan 2 & 3 i NO Sal)
+// KLASSRUMS KONFIGURATION
 const CLASSROOM_CONFIG = {
     "Sal 302": {
         max_seats: 25,
-        max_seats_by_class: {
-            "IT24A": 24,
-            "EE25A": 25,
-            "EE25B": 25
-        },
         columns_per_row: 8,
         gang_column_width: "100px",
         allows_names: true,
@@ -46,42 +49,23 @@ const CLASSROOM_CONFIG = {
     },
     "NO Salen": {
         max_seats: 25,
-        max_seats_by_class: {
-            "IT24A": 24,
-            "EE25A": 25,
-            "EE25B": 25
-        },
-        // KORREKT GRID: [Gång V] [2 platser] [Mittgång] [4 platser] -> 8 Kolumner
-        // Gången är nu i kolumn 4.
-        grid_template_columns: "0px repeat(2, 1fr) 80px repeat(4, 1fr)",
+        grid_template_columns: "40px repeat(2, 1fr) 80px repeat(4, 1fr)",
         allows_names: true,
-        // ** UPPDATERAD LAYOUT MAP för 8 kolumner, gång mellan 2 & 3 **
         layout_map: [
-             // Rad 2 (första bänkraden)
-            { id: 1, row: 2, col: 2 }, { id: 2, row: 2, col: 3 }, // Vänster block 1
-            // Gång (kolumn 4)
-            { id: 3, row: 2, col: 5 }, { id: 4, row: 2, col: 6 }, { id: 5, row: 2, col: 7 }, { id: 6, row: 2, col: 8 }, // Höger block (nu 4 platser)
-
-            // Rad 3
+            { id: 1, row: 2, col: 2 }, { id: 2, row: 2, col: 3 },
+            { id: 3, row: 2, col: 5 }, { id: 4, row: 2, col: 6 }, { id: 5, row: 2, col: 7 }, { id: 6, row: 2, col: 8 },
             { id: 7, row: 3, col: 2 }, { id: 8, row: 3, col: 3 },
             { id: 9, row: 3, col: 5 }, { id: 10, row: 3, col: 6 }, { id: 11, row: 3, col: 7 }, { id: 12, row: 3, col: 8 },
-
-            // Rad 4
             { id: 13, row: 4, col: 2 }, { id: 14, row: 4, col: 3 },
             { id: 15, row: 4, col: 5 }, { id: 16, row: 4, col: 6 }, { id: 17, row: 4, col: 7 }, { id: 18, row: 4, col: 8 },
-
-            // Rad 5
             { id: 19, row: 5, col: 2 }, { id: 20, row: 5, col: 3 },
             { id: 21, row: 5, col: 5 }, { id: 22, row: 5, col: 6 }, { id: 23, row: 5, col: 7 }, { id: 24, row: 5, col: 8 },
-
-            // Rad 6 (Endast plats 25)
-            { id: 25, row: 6, col: 8 } // Längst ner till höger
+            { id: 25, row: 6, col: 8 }
         ],
-        // ** KORREKT WHITEBOARD POSITION **
         whiteboard_position: {
-            row: 1,         // Längst upp
-            col_start: 2,   // Startar vid första bänkkolumnen
-            span: 7          // Sträcker sig över alla bänkar (kol 2-8)
+            row: 1,
+            col_start: 2,
+            span: 7
         }
     }
 };
@@ -98,6 +82,8 @@ const classroomSelect = document.getElementById('classroomSelect');
 const classSelect = document.getElementById('classSelect');
 const drawButton = document.getElementById('drawButton');
 const resetButton = document.getElementById('resetButton');
+const resultDisplay = document.getElementById('resultDisplay');
+const remainingCount = document.getElementById('remainingCount');
 const classroomLayout = document.getElementById('classroom-layout');
 const nameContainer = document.getElementById('name-container');
 
@@ -114,18 +100,19 @@ function populateClassroomSelect() {
 function populateClassSelect() {
     classSelect.innerHTML = '';
     for (const name in CLASS_LISTS) { const option = document.createElement('option'); option.value = name; option.textContent = name; classSelect.appendChild(option); }
-    classSelect.value = currentClass;
+    // Försök behålla den valda klassen, annars återgå till standard
+    if (CLASS_LISTS[currentClass]) {
+        classSelect.value = currentClass;
+    } else {
+        currentClass = Object.keys(CLASS_LISTS)[0];
+        classSelect.value = currentClass;
+    }
 }
 
 function renderDesks() {
     classroomLayout.innerHTML = '';
     const config = CLASSROOM_CONFIG[currentClassroom];
-
-    // Bestäm max antal platser baserat på klass
-    let max = config.max_seats;
-    if (config.max_seats_by_class && config.max_seats_by_class[currentClass]) {
-        max = config.max_seats_by_class[currentClass];
-    }
+    const max = config.max_seats;
 
     const whiteboard = document.createElement('div');
     whiteboard.id = 'whiteboard';
@@ -199,9 +186,11 @@ function updateUI() {
     const currentStudentList = CLASS_LISTS[currentClass] || [];
 
     if (config.allows_names) {
+        remainingCount.textContent = `Placerade: ${assignedCount} av ${currentStudentList.length} elever`;
         drawButton.textContent = "Placera Alla Elever";
         drawButton.disabled = assignedCount >= currentStudentList.length || assignedCount >= config.max_seats;
-    } else {
+    } else { // Fallback (borde inte hända nu)
+        remainingCount.textContent = `Draget: ${assignedCount} av ${config.max_seats} platser`;
         drawButton.textContent = "Drag Nästa Plats";
         drawButton.disabled = availableNumbers.length === 0;
     }
@@ -216,15 +205,10 @@ function initializeSession() {
     lastDrawnPair = savedData.lastDrawnPair || null;
 
     if (config.allows_names) {
-        populateClassSelect();
+        populateClassSelect(); // Fyller på och väljer rätt klass
     }
 
-    // Bestäm max antal platser baserat på klass
-    let max = config.max_seats;
-    if (config.max_seats_by_class && config.max_seats_by_class[currentClass]) {
-        max = config.max_seats_by_class[currentClass];
-    }
-
+    const max = config.max_seats;
     let allNumbers;
     if (config.layout_map) { // NO Salen
          allNumbers = config.layout_map.map(desk => desk.id);
@@ -239,6 +223,18 @@ function initializeSession() {
     availableNumbers = allNumbers.filter(n => !assignedNumbers.includes(n));
 
     renderDesks();
+
+    if (lastDrawnPair && assignments[lastDrawnPair.seat]) {
+         const studentName = assignments[lastDrawnPair.seat];
+         if (typeof studentName === 'string') {
+            resultDisplay.innerHTML = `${studentName} &rarr; <strong>Plats ${lastDrawnPair.seat}</strong>`;
+         } else {
+             resultDisplay.textContent = lastDrawnPair.seat;
+         }
+    } else {
+        resultDisplay.innerHTML = "?";
+        lastDrawnPair = null;
+    }
     updateUI();
 }
 
@@ -251,7 +247,6 @@ function handleClassroomChange() {
     document.body.className = `sal-${selectedSal.replace(/\s+/g, '-')}`;
     nameContainer.style.display = config.allows_names ? 'block' : 'none';
 
-    // Sätt grid-strukturen
     if (config.grid_template_columns) { classroomLayout.style.gridTemplateColumns = config.grid_template_columns; }
     else { const seats_per_side = config.columns_per_row / 2; classroomLayout.style.gridTemplateColumns = `repeat(${seats_per_side}, 1fr) ${config.gang_column_width} repeat(${seats_per_side}, 1fr)`; }
     if (config.grid_template_rows) { classroomLayout.style.gridTemplateRows = config.grid_template_rows; }
@@ -269,12 +264,7 @@ function assignAllAtOnce() {
     const currentStudentList = CLASS_LISTS[currentClass] || [];
     if (currentStudentList.length === 0) { alert("Ingen klasslista hittades."); return; }
     const config = CLASSROOM_CONFIG[currentClassroom];
-
-    // Bestäm max antal platser baserat på klass
-    let maxSeats = config.max_seats;
-    if (config.max_seats_by_class && config.max_seats_by_class[currentClass]) {
-        maxSeats = config.max_seats_by_class[currentClass];
-    }
+    const maxSeats = config.max_seats;
 
     if (currentStudentList.length > maxSeats) {
         if (!confirm(`Varning: Fler elever (${currentStudentList.length}) än platser (${maxSeats}). Fortsätta?`)) return;
@@ -310,6 +300,7 @@ function assignAllAtOnce() {
     lastDrawnPair = null;
     saveData({ assignments, lastDrawnPair });
     renderDesks();
+    resultDisplay.innerHTML = `${placementsMade} av ${currentStudentList.length} elever placerade!`;
     updateUI();
 }
 
