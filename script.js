@@ -21,8 +21,6 @@ const STUDENT_LIST_EE25B = [
     "Lionel", "Måns", "Leon", "David", "Adin", "Filip", "Metin", "Olle",
     "Engjull", "Dominic", "Emil"
 ];
-
-// NYTT: Klasslista för TE24
 const STUDENT_LIST_TE24 = [
     "Hamza", "Ludvig", "Julian", "Kamil", "Taha", "Melvin", "Emma",
     "Sebastian", "Almin", "Mani", "Knut", "Jibril", "Mojtaba", "Otto",
@@ -34,11 +32,11 @@ const CLASS_LISTS = {
     "IT24A": STUDENT_LIST_IT24A,
     "EE25A": STUDENT_LIST_EE25A,
     "EE25B": STUDENT_LIST_EE25B,
-    "TE24": STUDENT_LIST_TE24 // NYTT: Klassen tillagd i huvudobjektet
+    "TE24": STUDENT_LIST_TE24
 };
 // -------------------------------------------------------------------
 
-// KLASSRUMS KONFIGURATION
+// KLASSRUMS KONFIGURATION (Med justerad Sal 305)
 const CLASSROOM_CONFIG = {
     "Sal 302": {
         max_seats: 25,
@@ -67,6 +65,49 @@ const CLASSROOM_CONFIG = {
             col_start: 2,
             span: 7
         }
+    },
+    // ** UPPDATERAD SAL 305 **
+    "Sal 305": {
+        max_seats: 30, // 15 bänkar * 2 platser
+        allows_names: true,
+        grid_template_columns: "repeat(2, 1fr) 50px repeat(2, 1fr) 50px repeat(2, 1fr)",
+        whiteboard_position: { row: 1, col_start: 1, span: 8 },
+        
+        // Pelaren är nu på rad 3, kolumn 7 och spänner 1 plats.
+        pillar_position: { row: 3, col_start: 7, span: 1 }, 
+        
+        // Karta över de 30 platserna, justerad
+        layout_map: [
+            // Rad 2 (Nu en full bänkrad)
+            { id: 1, row: 2, col: 1 }, { id: 2, row: 2, col: 2 },   // Vänster
+            { id: 3, row: 2, col: 4 }, { id: 4, row: 2, col: 5 },   // Mitten
+            { id: 5, row: 2, col: 7 }, { id: 6, row: 2, col: 8 },   // Höger bänk 1
+            
+            // Rad 3 (Pelaren är i högra kolumnen, tar plats 9)
+            { id: 7, row: 3, col: 1 }, { id: 8, row: 3, col: 2 },
+            { id: 9, row: 3, col: 4 }, { id: 10, row: 3, col: 5 },
+            // Plats 9 & 10 (gamla) är nu blockerade
+            
+            // Rad 4
+            { id: 11, row: 4, col: 1 }, { id: 12, row: 4, col: 2 },
+            { id: 13, row: 4, col: 4 }, { id: 14, row: 4, col: 5 },
+            { id: 15, row: 4, col: 7 }, { id: 16, row: 4, col: 8 }, // Höger bänk 2
+
+            // Rad 5
+            { id: 17, row: 5, col: 1 }, { id: 18, row: 5, col: 2 },
+            { id: 19, row: 5, col: 4 }, { id: 20, row: 5, col: 5 },
+            { id: 21, row: 5, col: 7 }, { id: 22, row: 5, col: 8 }, // Höger bänk 3
+            
+            // Rad 6
+            { id: 23, row: 6, col: 1 }, { id: 24, row: 6, col: 2 },
+            { id: 25, row: 6, col: 4 }, { id: 26, row: 6, col: 5 },
+            // Tomt till höger
+            
+            // Rad 7
+            { id: 27, row: 7, col: 1 }, { id: 28, row: 7, col: 2 },
+            { id: 29, row: 7, col: 4 }, { id: 30, row: 7, col: 5 }
+            // Tomt till höger
+        ]
     }
 };
 
@@ -100,13 +141,8 @@ function populateClassroomSelect() {
 function populateClassSelect() {
     classSelect.innerHTML = '';
     for (const name in CLASS_LISTS) { const option = document.createElement('option'); option.value = name; option.textContent = name; classSelect.appendChild(option); }
-    // Försök behålla den valda klassen, annars återgå till standard
-    if (CLASS_LISTS[currentClass]) {
-        classSelect.value = currentClass;
-    } else {
-        currentClass = Object.keys(CLASS_LISTS)[0];
-        classSelect.value = currentClass;
-    }
+    if (CLASS_LISTS[currentClass]) { classSelect.value = currentClass; }
+    else { currentClass = Object.keys(CLASS_LISTS)[0]; classSelect.value = currentClass; }
 }
 
 function renderDesks() {
@@ -114,6 +150,7 @@ function renderDesks() {
     const config = CLASSROOM_CONFIG[currentClassroom];
     const max = config.max_seats;
 
+    // 1. Rita Whiteboard
     const whiteboard = document.createElement('div');
     whiteboard.id = 'whiteboard';
     whiteboard.textContent = 'WHITEBOARD';
@@ -123,18 +160,25 @@ function renderDesks() {
         whiteboard.style.gridColumnStart = pos.col_start;
         whiteboard.style.gridColumnEnd = 'span ' + pos.span;
     } else {
-        let defaultRow = 1;
-        try {
-            const allRows = config.layout_map ? config.layout_map.map(d=>d.row) : Array.from(classroomLayout.querySelectorAll('.desk')).map(d=>parseInt(d.style.gridRowStart || '1'));
-            if(allRows.length > 0) defaultRow = Math.max(...allRows) + 1;
-        } catch {}
-        whiteboard.style.gridRowStart = defaultRow;
+        whiteboard.style.gridRowStart = 1;
         whiteboard.style.gridColumnStart = 1;
         whiteboard.style.gridColumnEnd = 'span ' + ((config.columns_per_row || 4) / 2);
     }
     classroomLayout.appendChild(whiteboard);
 
+    // 2. Rita Pelare
+    if (config.pillar_position) {
+        const pillar = document.createElement('div');
+        pillar.className = 'pillar';
+        pillar.textContent = 'PELARE';
+        const pos = config.pillar_position;
+        pillar.style.gridRowStart = pos.row;
+        pillar.style.gridColumnStart = pos.col_start;
+        pillar.style.gridColumnEnd = 'span ' + pos.span;
+        classroomLayout.appendChild(pillar);
+    }
 
+    // 3. Rita Bänkar
     const renderDesk = (deskInfo) => {
         const desk = document.createElement('div');
         desk.className = 'desk';
@@ -157,7 +201,7 @@ function renderDesks() {
         classroomLayout.appendChild(desk);
     };
 
-    if (config.layout_map) { // NO Salen
+    if (config.layout_map) { // För NO Salen och Sal 305
         config.layout_map.forEach(renderDesk);
         let mappedIds = config.layout_map.map(d => d.id);
          for (let i = 1; i <= max; i++) {
@@ -166,7 +210,7 @@ function renderDesks() {
                  renderDesk({ id: i });
              }
          }
-    } else { // Sal 302
+    } else { // För Sal 302
         let rowCounter = (config.whiteboard_position && config.whiteboard_position.row === 1) ? 2 : 1;
         let columnCounter = 1;
         for (let i = 0; i < max; i++) {
@@ -189,7 +233,7 @@ function updateUI() {
         remainingCount.textContent = `Placerade: ${assignedCount} av ${currentStudentList.length} elever`;
         drawButton.textContent = "Placera Alla Elever";
         drawButton.disabled = assignedCount >= currentStudentList.length || assignedCount >= config.max_seats;
-    } else { // Fallback (borde inte hända nu)
+    } else {
         remainingCount.textContent = `Draget: ${assignedCount} av ${config.max_seats} platser`;
         drawButton.textContent = "Drag Nästa Plats";
         drawButton.disabled = availableNumbers.length === 0;
@@ -205,17 +249,17 @@ function initializeSession() {
     lastDrawnPair = savedData.lastDrawnPair || null;
 
     if (config.allows_names) {
-        populateClassSelect(); // Fyller på och väljer rätt klass
+        populateClassSelect();
     }
 
     const max = config.max_seats;
     let allNumbers;
-    if (config.layout_map) { // NO Salen
+    if (config.layout_map) { // Salar med karta
          allNumbers = config.layout_map.map(desk => desk.id);
          for (let i = 1; i <= max; i++) { if(!allNumbers.includes(i)) allNumbers.push(i); }
          allNumbers.sort((a, b) => a - b);
          allNumbers = allNumbers.slice(0, max);
-    } else { // Sal 302
+    } else { // Sal 302 (standard grid)
          allNumbers = Array.from({ length: max }, (_, i) => i + 1);
     }
 
@@ -275,12 +319,12 @@ function assignAllAtOnce() {
     const shuffledStudents = [...currentStudentList].sort(() => 0.5 - Math.random());
 
     let allSeats;
-     if (config.layout_map) { // NO Salen
+     if (config.layout_map) {
          allSeats = config.layout_map.map(d => d.id);
          for (let i = 1; i <= maxSeats; i++) { if(!allSeats.includes(i)) allSeats.push(i); }
          allSeats.sort((a, b) => a - b);
          allSeats = allSeats.slice(0, maxSeats);
-    } else { // Sal 302
+    } else {
          allSeats = Array.from({ length: maxSeats }, (_, i) => i + 1);
     }
 
@@ -305,11 +349,37 @@ function assignAllAtOnce() {
 }
 
 function resetSession() {
-    if (confirm('Är du säker? Alla placeringar för denna sal och klass raderas.')) {
+    showConfirmModal('Är du säker? Alla placeringar för denna sal och klass raderas.', () => {
         localStorage.removeItem(getStorageKey());
         assignments = {};
         initializeSession();
-    }
+    });
+}
+
+function showConfirmModal(message, onConfirm) {
+    const modal = document.getElementById('confirmModal');
+    const confirmMessage = document.getElementById('confirmMessage');
+    const confirmYes = document.getElementById('confirmYes');
+    const confirmNo = document.getElementById('confirmNo');
+
+    confirmMessage.textContent = message;
+    modal.classList.remove('hidden');
+
+    const handleConfirm = () => {
+        modal.classList.add('hidden');
+        confirmYes.removeEventListener('click', handleConfirm);
+        confirmNo.removeEventListener('click', handleCancel);
+        onConfirm();
+    };
+
+    const handleCancel = () => {
+        modal.classList.add('hidden');
+        confirmYes.removeEventListener('click', handleConfirm);
+        confirmNo.removeEventListener('click', handleCancel);
+    };
+
+    confirmYes.addEventListener('click', handleConfirm);
+    confirmNo.addEventListener('click', handleCancel);
 }
 
 // --- EVENTLYSSNARE OCH START ---
