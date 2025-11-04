@@ -39,11 +39,12 @@ const CLASS_LISTS = {
 // KLASSRUMS KONFIGURATION (Med justerad Sal 305)
 const CLASSROOM_CONFIG = {
     "Sal 302": {
-        max_seats: 25,
+        max_seats: 24,
         columns_per_row: 8,
         gang_column_width: "100px",
         allows_names: true,
-        whiteboard_position: { row: 1, col_start: 6, span: 4 }
+        whiteboard_position: { row: 1, col_start: 6, span: 4 },
+        allowed_classes: ["IT24A", "EE25A", "TE24"]
     },
     "NO Salen": {
         max_seats: 25,
@@ -140,9 +141,24 @@ function populateClassroomSelect() {
 }
 function populateClassSelect() {
     classSelect.innerHTML = '';
-    for (const name in CLASS_LISTS) { const option = document.createElement('option'); option.value = name; option.textContent = name; classSelect.appendChild(option); }
-    if (CLASS_LISTS[currentClass]) { classSelect.value = currentClass; }
-    else { currentClass = Object.keys(CLASS_LISTS)[0]; classSelect.value = currentClass; }
+    const config = CLASSROOM_CONFIG[currentClassroom];
+    const allowedClasses = config.allowed_classes || Object.keys(CLASS_LISTS);
+
+    for (const name in CLASS_LISTS) {
+        if (allowedClasses.includes(name)) {
+            const option = document.createElement('option');
+            option.value = name;
+            option.textContent = name;
+            classSelect.appendChild(option);
+        }
+    }
+
+    if (allowedClasses.includes(currentClass)) {
+        classSelect.value = currentClass;
+    } else {
+        currentClass = allowedClasses[0];
+        classSelect.value = currentClass;
+    }
 }
 
 function renderDesks() {
