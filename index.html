@@ -1,0 +1,67 @@
+<!DOCTYPE html>
+<html lang="sv">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta name="description" content="Verktyg för att slumpmässigt placera elever på platser i klassrum. Blockera platser och importera klasslistor enkelt.">
+    <meta name="theme-color" content="#5b21b6">
+    <title>Platsdelning för elever</title>
+    <link rel="stylesheet" href="style.css">
+    <link rel="icon" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'><text y='.9em' font-size='90'>🎓</text></svg>">
+</head>
+<body>
+    <div class="container">
+        <header>
+            <h1>🎓 Platsdelning för elever</h1>
+            <p class="subtitle">Klicka på en plats för att blockera/avblockera den</p>
+        </header>
+
+        <div class="controls">
+            <div class="control-row">
+                <div class="control-group">
+                    <label for="classroomSelect">📍 Välj Sal:</label>
+                    <select id="classroomSelect" aria-label="Välj klassrum"></select>
+                </div>
+
+                <div class="control-group">
+                    <label for="fileInput">📂 Ladda klasslista (JSON):</label>
+                    <div class="file-input-wrapper">
+                        <input type="file" id="fileInput" accept=".json" aria-label="Ladda upp klasslista">
+                        <span class="file-input-text">Välj fil...</span>
+                    </div>
+                </div>
+
+                <div id="name-container" class="control-group">
+                    <label for="classSelect">👥 Välj Klass:</label>
+                    <select id="classSelect" aria-label="Välj klass"></select>
+                </div>
+            </div>
+
+            <!-- Statusvisning -->
+            <div class="status-bar">
+                <span id="statusDisplay">📊 Ladda en klasslista för att börja</span>
+            </div>
+
+            <div class="button-group">
+                <button id="drawButton" class="btn-primary">✨ Placera Elever</button>
+                <button id="resetButton" class="btn-secondary">🔄 Återställ</button>
+            </div>
+        </div>
+
+        <main id="classroom-layout" role="grid" aria-label="Klassrumsvy"></main>
+    </div>
+
+    <!-- Modal för bekräftelse -->
+    <div id="confirmModal" class="modal hidden" role="dialog" aria-modal="true">
+        <div class="modal-content">
+            <p id="confirmMessage">Är du säker?</p>
+            <div class="modal-buttons">
+                <button id="confirmYes" class="btn-confirm">Ja, radera</button>
+                <button id="confirmNo" class="btn-cancel">Avbryt</button>
+            </div>
+        </div>
+    </div>
+
+    <script src="script.js"></script>
+</body>
+</html>
