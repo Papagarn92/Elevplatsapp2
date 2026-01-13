@@ -94,6 +94,9 @@ const statusDisplay = document.getElementById('statusDisplay');
 const classroomLayout = document.getElementById('classroom-layout');
 const nameContainer = document.getElementById('name-container');
 const fileInput = document.getElementById('fileInput');
+const clearBlocksButton = document.getElementById('clearBlocksButton');
+const exportButton = document.getElementById('exportButton');
+const tooltip = document.getElementById('tooltip');
 
 // ==========================================
 // LAGRINGSHANTERING
@@ -318,11 +321,15 @@ function renderDesk(deskInfo) {
     if (isBlocked) {
         desk.textContent = `🚫 Plats ${deskInfo.id}`;
         desk.classList.add('blocked');
+        desk.dataset.tooltip = `Plats ${deskInfo.id} - Blockerad`;
     } else if (studentName) {
-        desk.textContent = studentName;
+        // Visa elevnamn + platsnummer
+        desk.innerHTML = `<span class="student-name">${studentName}</span><span class="seat-number">Plats ${deskInfo.id}</span>`;
         desk.classList.add('drawn');
+        desk.dataset.tooltip = `${studentName} - Plats ${deskInfo.id}`;
     } else {
         desk.textContent = `Plats ${deskInfo.id}`;
+        desk.dataset.tooltip = `Plats ${deskInfo.id} - Ledig`;
     }
 
     // Positionering
@@ -333,6 +340,11 @@ function renderDesk(deskInfo) {
 
     // Klickhantering
     desk.addEventListener('click', () => toggleBlockSeat(deskInfo.id));
+
+    // Tooltip-hantering
+    desk.addEventListener('mouseenter', showTooltip);
+    desk.addEventListener('mouseleave', hideTooltip);
+    desk.addEventListener('mousemove', moveTooltip);
 
     classroomLayout.appendChild(desk);
 }
@@ -626,6 +638,122 @@ document.addEventListener('DOMContentLoaded', () => {
     classSelect.addEventListener('change', handleClassChange);
     fileInput.addEventListener('change', handleFileUpload);
 
+    // Nya knappar
+    if (clearBlocksButton) {
+        clearBlocksButton.addEventListener('click', clearAllBlocks);
+    }
+    if (exportButton) {
+        exportButton.addEventListener('click', exportAsImage);
+    }
+
     // Starta med första klassrummet
     handleClassroomChange();
 });
+
+// ==========================================
+// TOOLTIP-FUNKTIONER
+// ==========================================
+
+/**
+ * Visar tooltip vid hover
+ */
+function showTooltip(e) {
+    if (!tooltip) return;
+    const text = e.target.dataset.tooltip || e.target.closest('.desk')?.dataset.tooltip;
+    if (text) {
+        tooltip.textContent = text;
+        tooltip.classList.remove('hidden');
+    }
+}
+
+/**
+ * Döljer tooltip
+ */
+function hideTooltip() {
+    if (tooltip) {
+        tooltip.classList.add('hidden');
+    }
+}
+
+/**
+ * Flyttar tooltip med musen
+ */
+function moveTooltip(e) {
+    if (!tooltip) return;
+    tooltip.style.left = e.pageX + 12 + 'px';
+    tooltip.style.top = e.pageY + 12 + 'px';
+}
+
+// ==========================================
+// EXTRA FUNKTIONER
+// ==========================================
+
+/**
+ * Rensar alla blockeringar
+ */
+function clearAllBlocks() {
+    if (blockedSeats.length === 0) {
+        alert('✅ Inga platser är blockerade.');
+        return;
+    }
+
+    showConfirmModal(
+        `Vill du ta bort alla ${blockedSeats.length} blockeringar?`,
+        () => {
+            blockedSeats = [];
+            saveBlockedSeats();
+            renderDesks();
+            updateStatus();
+        }
+    );
+}
+
+/**
+ * Exporterar klassrumslayouten som PNG-bild
+ */
+function exportAsImage() {
+    const container = document.getElementById('appContainer');
+    if (!container) {
+        alert('❌ Kunde inte hitta element att exportera.');
+        return;
+    }
+
+    // Visa laddningsmeddelande
+    const originalText = exportButton.textContent;
+    exportButton.textContent = '⏳ Exporterar...';
+    exportButton.disabled = true;
+
+    // Använd html2canvas
+    if (typeof html2canvas !== 'undefined') {
+        html2canvas(container, {
+            backgroundColor: '#f8fafc',
+            scale: 2,
+            useCORS: true,
+            logging: false
+        }).then(canvas => {
+            // Skapa nedladdningslänk
+            const link = document.createElement('a');
+            const timestamp = new Date().toISOString().slice(0, 10);
+            link.download = `platsdelning_${currentClassroom.replace(/\s+/g, '_')}_${currentClass}_${timestamp}.png`;
+            link.href = canvas.toDataURL('image/png');
+
+            // VIKTIGT: Länken måste finnas i DOM för att click() ska fungera lokalt
+            document.body.appendChild(link);
+            link.click();
+            document.body.removeChild(link);
+
+            // Återställ knappen
+            exportButton.textContent = originalText;
+            exportButton.disabled = false;
+        }).catch(err => {
+            console.error('Export misslyckades:', err);
+            alert('❌ Exporten misslyckades. Försök igen.');
+            exportButton.textContent = originalText;
+            exportButton.disabled = false;
+        });
+    } else {
+        alert('❌ html2canvas laddades inte. Kontrollera internetanslutningen.');
+        exportButton.textContent = originalText;
+        exportButton.disabled = false;
+    }
+}
