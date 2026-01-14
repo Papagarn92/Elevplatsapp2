@@ -26,20 +26,20 @@ const CLASSROOM_CONFIG = {
     },
     "NO Salen": {
         max_seats: 25,
-        grid_template_columns: "40px repeat(2, 1fr) 80px repeat(4, 1fr)",
+        grid_template_columns: "repeat(2, 1fr) 80px repeat(4, 1fr)",
         allows_names: true,
         layout_map: [
-            { id: 1, row: 2, col: 2 }, { id: 2, row: 2, col: 3 },
-            { id: 3, row: 2, col: 5 }, { id: 4, row: 2, col: 6 }, { id: 5, row: 2, col: 7 }, { id: 6, row: 2, col: 8 },
-            { id: 7, row: 3, col: 2 }, { id: 8, row: 3, col: 3 },
-            { id: 9, row: 3, col: 5 }, { id: 10, row: 3, col: 6 }, { id: 11, row: 3, col: 7 }, { id: 12, row: 3, col: 8 },
-            { id: 13, row: 4, col: 2 }, { id: 14, row: 4, col: 3 },
-            { id: 15, row: 4, col: 5 }, { id: 16, row: 4, col: 6 }, { id: 17, row: 4, col: 7 }, { id: 18, row: 4, col: 8 },
-            { id: 19, row: 5, col: 2 }, { id: 20, row: 5, col: 3 },
-            { id: 21, row: 5, col: 5 }, { id: 22, row: 5, col: 6 }, { id: 23, row: 5, col: 7 }, { id: 24, row: 5, col: 8 },
-            { id: 25, row: 6, col: 8 }
+            { id: 1, row: 2, col: 1 }, { id: 2, row: 2, col: 2 },
+            { id: 3, row: 2, col: 4 }, { id: 4, row: 2, col: 5 }, { id: 5, row: 2, col: 6 }, { id: 6, row: 2, col: 7 },
+            { id: 7, row: 3, col: 1 }, { id: 8, row: 3, col: 2 },
+            { id: 9, row: 3, col: 4 }, { id: 10, row: 3, col: 5 }, { id: 11, row: 3, col: 6 }, { id: 12, row: 3, col: 7 },
+            { id: 13, row: 4, col: 1 }, { id: 14, row: 4, col: 2 },
+            { id: 15, row: 4, col: 4 }, { id: 16, row: 4, col: 5 }, { id: 17, row: 4, col: 6 }, { id: 18, row: 4, col: 7 },
+            { id: 19, row: 5, col: 1 }, { id: 20, row: 5, col: 2 },
+            { id: 21, row: 5, col: 4 }, { id: 22, row: 5, col: 5 }, { id: 23, row: 5, col: 6 }, { id: 24, row: 5, col: 7 },
+            { id: 25, row: 6, col: 7 }
         ],
-        whiteboard_position: { row: 1, col_start: 2, span: 7 }
+        whiteboard_position: { row: 1, col_start: 1, span: 7 }
     },
     "Sal 305": {
         max_seats: 30,
@@ -69,6 +69,58 @@ const CLASSROOM_CONFIG = {
             // Rad 7
             { id: 27, row: 7, col: 1 }, { id: 28, row: 7, col: 2 },
             { id: 29, row: 7, col: 4 }, { id: 30, row: 7, col: 5 }
+        ]
+    },
+    "Sal 315": {
+        max_seats: 30,
+        allows_names: true,
+        grid_template_columns: "repeat(2, 1fr) 60px repeat(4, 1fr)",
+        whiteboard_position: { row: 1, col_start: 1, span: 7 },
+        layout_map: [
+            // Rad 2: Höger 2 platser
+            { id: 1, row: 2, col: 6 }, { id: 2, row: 2, col: 7 },
+            // Rad 3: Höger 4 platser
+            { id: 3, row: 3, col: 4 }, { id: 4, row: 3, col: 5 }, { id: 5, row: 3, col: 6 }, { id: 6, row: 3, col: 7 },
+            // Rad 4: Vänster 2 + Höger 4
+            { id: 7, row: 4, col: 1 }, { id: 8, row: 4, col: 2 },
+            { id: 9, row: 4, col: 4 }, { id: 10, row: 4, col: 5 }, { id: 11, row: 4, col: 6 }, { id: 12, row: 4, col: 7 },
+            // Rad 5
+            { id: 13, row: 5, col: 1 }, { id: 14, row: 5, col: 2 },
+            { id: 15, row: 5, col: 4 }, { id: 16, row: 5, col: 5 }, { id: 17, row: 5, col: 6 }, { id: 18, row: 5, col: 7 },
+            // Rad 6
+            { id: 19, row: 6, col: 1 }, { id: 20, row: 6, col: 2 },
+            { id: 21, row: 6, col: 4 }, { id: 22, row: 6, col: 5 }, { id: 23, row: 6, col: 6 }, { id: 24, row: 6, col: 7 },
+            // Rad 7
+            { id: 25, row: 7, col: 1 }, { id: 26, row: 7, col: 2 },
+            { id: 27, row: 7, col: 4 }, { id: 28, row: 7, col: 5 }, { id: 29, row: 7, col: 6 }, { id: 30, row: 7, col: 7 }
+        ]
+    },
+    "Sal 310": {
+        max_seats: 30,
+        allows_names: true,
+        grid_template_columns: "repeat(2, 1fr) 50px repeat(2, 1fr) 50px repeat(2, 1fr)",
+        whiteboard_position: { row: 1, col_start: 1, span: 8 },
+        layout_map: [
+            // Rad 2
+            { id: 1, row: 2, col: 1 }, { id: 2, row: 2, col: 2 },
+            { id: 3, row: 2, col: 4 }, { id: 4, row: 2, col: 5 },
+            { id: 5, row: 2, col: 7 }, { id: 6, row: 2, col: 8 },
+            // Rad 3
+            { id: 7, row: 3, col: 1 }, { id: 8, row: 3, col: 2 },
+            { id: 9, row: 3, col: 4 }, { id: 10, row: 3, col: 5 },
+            { id: 11, row: 3, col: 7 }, { id: 12, row: 3, col: 8 },
+            // Rad 4
+            { id: 13, row: 4, col: 1 }, { id: 14, row: 4, col: 2 },
+            { id: 15, row: 4, col: 4 }, { id: 16, row: 4, col: 5 },
+            { id: 17, row: 4, col: 7 }, { id: 18, row: 4, col: 8 },
+            // Rad 5
+            { id: 19, row: 5, col: 1 }, { id: 20, row: 5, col: 2 },
+            { id: 21, row: 5, col: 4 }, { id: 22, row: 5, col: 5 },
+            { id: 23, row: 5, col: 7 }, { id: 24, row: 5, col: 8 },
+            // Rad 6
+            { id: 25, row: 6, col: 1 }, { id: 26, row: 6, col: 2 },
+            { id: 27, row: 6, col: 4 }, { id: 28, row: 6, col: 5 },
+            { id: 29, row: 6, col: 7 }, { id: 30, row: 6, col: 8 }
         ]
     }
 };
@@ -323,8 +375,15 @@ function renderDesk(deskInfo) {
         desk.classList.add('blocked');
         desk.dataset.tooltip = `Plats ${deskInfo.id} - Blockerad`;
     } else if (studentName) {
+        // Bestäm skalning baserat på namnets längd
+        let scaleClass = '';
+        if (studentName.length > 6) scaleClass = 'scale-sm';
+        if (studentName.length > 8) scaleClass = 'scale-xs';
+        if (studentName.length > 10) scaleClass = 'scale-xxs';
+        if (studentName.length > 12) scaleClass = 'scale-xxxs';
+
         // Visa elevnamn + platsnummer
-        desk.innerHTML = `<span class="student-name">${studentName}</span><span class="seat-number">Plats ${deskInfo.id}</span>`;
+        desk.innerHTML = `<span class="student-name ${scaleClass}">${studentName}</span><span class="seat-number">Plats ${deskInfo.id}</span>`;
         desk.classList.add('drawn');
         desk.dataset.tooltip = `${studentName} - Plats ${deskInfo.id}`;
     } else {
@@ -680,8 +739,8 @@ function hideTooltip() {
  */
 function moveTooltip(e) {
     if (!tooltip) return;
-    tooltip.style.left = e.pageX + 12 + 'px';
-    tooltip.style.top = e.pageY + 12 + 'px';
+    tooltip.style.left = e.clientX + 12 + 'px';
+    tooltip.style.top = e.clientY + 12 + 'px';
 }
 
 // ==========================================
