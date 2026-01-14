@@ -134,6 +134,10 @@ let currentClass = '';
 let assignments = {};
 let blockedSeats = [];
 
+// Drag-select för att blockera flera platser
+let isDragging = false;
+let dragMode = null; // 'block' eller 'unblock'
+
 // ==========================================
 // DOM-ELEMENT
 // ==========================================
@@ -365,8 +369,12 @@ function renderPillar(config) {
 function renderDesk(deskInfo) {
     const desk = document.createElement('div');
     desk.className = 'desk';
-    desk.id = `desk-${deskInfo.id}`;
+    desk.id = `seat-${deskInfo.id}`; // För snabb åtkomst utan att rita om
 
+    // Hantera dynamiska klasser för specifika layouter
+    if (deskInfo.classes) {
+        desk.classList.add(...deskInfo.classes);
+    }
     const isBlocked = blockedSeats.includes(deskInfo.id);
     const studentName = assignments[deskInfo.id];
 
@@ -397,15 +405,67 @@ function renderDesk(deskInfo) {
     if (deskInfo.gridColumnStart) desk.style.gridColumnStart = deskInfo.gridColumnStart;
     if (deskInfo.gridRowStart) desk.style.gridRowStart = deskInfo.gridRowStart;
 
-    // Klickhantering
-    desk.addEventListener('click', () => toggleBlockSeat(deskInfo.id));
+    // Drag-select för blockering
+    desk.addEventListener('mousedown', (e) => {
+        e.preventDefault();
+        isDragging = true;
+        const isBlocked = blockedSeats.includes(deskInfo.id);
+        dragMode = isBlocked ? 'unblock' : 'block';
+        toggleBlockSeat(deskInfo.id);
+    });
 
-    // Tooltip-hantering
-    desk.addEventListener('mouseenter', showTooltip);
+    desk.addEventListener('mouseenter', (e) => {
+        if (isDragging) {
+            const isBlocked = blockedSeats.includes(deskInfo.id);
+            if (dragMode === 'block' && !isBlocked) {
+                toggleBlockSeat(deskInfo.id);
+            } else if (dragMode === 'unblock' && isBlocked) {
+                toggleBlockSeat(deskInfo.id);
+            }
+        }
+        showTooltip(e);
+    });
+
     desk.addEventListener('mouseleave', hideTooltip);
     desk.addEventListener('mousemove', moveTooltip);
 
     classroomLayout.appendChild(desk);
+}
+
+/**
+ * Uppdaterar utseendet på en enskild plats utan att rita om hela klassrummet
+ */
+function updateSeatVisuals(seatId) {
+    const desk = document.getElementById(`seat-${seatId}`);
+    if (!desk) return;
+
+    const isBlocked = blockedSeats.includes(seatId);
+
+    // Ta bort gamla klasser och innehåll
+    desk.classList.remove('blocked', 'drawn');
+    desk.innerHTML = '';
+
+    if (isBlocked) {
+        desk.classList.add('blocked');
+        desk.innerHTML = '<span class="blocked-icon">✕</span>';
+        desk.dataset.tooltip = `Plats ${seatId} - Blockerad`;
+    } else {
+        const studentName = assignments[seatId];
+        if (studentName) {
+            let scaleClass = '';
+            if (studentName.length > 6) scaleClass = 'scale-sm';
+            if (studentName.length > 8) scaleClass = 'scale-xs';
+            if (studentName.length > 10) scaleClass = 'scale-xxs';
+            if (studentName.length > 12) scaleClass = 'scale-xxxs';
+
+            desk.innerHTML = `<span class="student-name ${scaleClass}">${studentName}</span><span class="seat-number">Plats ${seatId}</span>`;
+            desk.classList.add('drawn');
+            desk.dataset.tooltip = `${studentName} - Plats ${seatId}`;
+        } else {
+            desk.textContent = `Plats ${seatId}`;
+            desk.dataset.tooltip = `Plats ${seatId} - Ledig`;
+        }
+    }
 }
 
 /**
@@ -590,7 +650,12 @@ function toggleBlockSeat(seatId) {
     }
 
     saveBlockedSeats();
-    renderDesks();
+    // Uppdatera endast den specifika platsen för prestanda vid dragning
+    if (document.getElementById(`seat-${seatId}`)) {
+        updateSeatVisuals(seatId);
+    } else {
+        renderDesks();
+    }
     updateStatus();
 }
 
@@ -704,6 +769,15 @@ document.addEventListener('DOMContentLoaded', () => {
     if (exportButton) {
         exportButton.addEventListener('click', exportAsImage);
     }
+
+    // Global mouseup för att avsluta drag-select
+    document.addEventListener('mouseup', () => {
+        isDragging = false;
+        dragMode = null;
+    });
+
+    // Förhindra text-markering vid drag
+    classroomLayout.addEventListener('selectstart', (e) => e.preventDefault());
 
     // Starta med första klassrummet
     handleClassroomChange();
