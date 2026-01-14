@@ -1,19 +1,19 @@
-@import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&family=Poppins:wght@600;700&display=swap');
+@import url('https://fonts.googleapis.com/css2?family=DM+Sans:wght@400;500;600;700&display=swap');
 
 /* ==========================================
-   INDIGOBLÅTT FÄRGSCHEMA
+   FRÄSCHT BLÅ/TEAL FÄRGSCHEMA
    ========================================== */
 :root {
-    /* Primära indigoblå färger */
-    --primary: #6366f1;
-    --primary-dark: #4f46e5;
-    --primary-light: #818cf8;
-    --primary-pale: #e0e7ff;
+    /* Primära blå färger - mjukare och behagligare */
+    --primary: #5b8def;
+    --primary-dark: #4a7cd9;
+    --primary-light: #7ba3f7;
+    --primary-pale: #e8f0fe;
 
-    /* Accentfärger (lila/violett) */
-    --accent: #8b5cf6;
-    --accent-dark: #7c3aed;
-    --accent-light: #a78bfa;
+    /* Accentfärger (teal/grön) */
+    --accent: #10b981;
+    --accent-dark: #059669;
+    --accent-light: #34d399;
 
     /* Semantiska färger */
     --success: #10b981;
@@ -24,27 +24,27 @@
     --danger: #ef4444;
     --danger-dark: #dc2626;
 
-    /* Bakgrunder */
+    /* Bakgrunder - ljusare och fräschare */
     --bg-primary: #ffffff;
     --bg-secondary: #f8fafc;
     --bg-tertiary: #f1f5f9;
-    --bg-glass: rgba(255, 255, 255, 0.88);
+    --bg-glass: rgba(255, 255, 255, 0.92);
 
-    /* Text */
-    --text-primary: #1e293b;
-    --text-secondary: #475569;
+    /* Text - mjukare kontrast */
+    --text-primary: #334155;
+    --text-secondary: #64748b;
     --text-muted: #94a3b8;
     --text-light: #cbd5e1;
 
     /* Ramar & Skuggor */
     --border: #e2e8f0;
     --border-light: #f1f5f9;
-    --shadow-color: rgba(99, 102, 241, 0.12);
+    --shadow-color: rgba(59, 130, 246, 0.1);
     --shadow-sm: 0 2px 4px var(--shadow-color);
     --shadow-md: 0 4px 20px var(--shadow-color);
     --shadow-lg: 0 8px 40px var(--shadow-color);
-    --shadow-xl: 0 20px 60px rgba(99, 102, 241, 0.18);
-    --shadow-glow: 0 0 40px rgba(99, 102, 241, 0.25);
+    --shadow-xl: 0 20px 60px rgba(59, 130, 246, 0.15);
+    --shadow-glow: 0 0 40px rgba(16, 185, 129, 0.15);
 
     /* Radier */
     --radius-sm: 10px;
@@ -68,7 +68,7 @@
 }
 
 body {
-    font-family: 'Inter', -apple-system, BlinkMacSystemFont, sans-serif;
+    font-family: 'DM Sans', -apple-system, BlinkMacSystemFont, sans-serif;
     display: flex;
     justify-content: center;
     align-items: flex-start;
@@ -76,11 +76,11 @@ body {
     margin: 0;
     padding: 10px;
     background: linear-gradient(135deg,
-            #1e293b 0%,
-            #334155 25%,
-            #475569 50%,
-            #64748b 75%,
-            #94a3b8 100%);
+            #1e3a5f 0%,
+            #2d4a6f 25%,
+            #3d5a7f 50%,
+            #4d6a8f 75%,
+            #5d7a9f 100%);
     background-attachment: fixed;
     color: var(--text-primary);
 }
@@ -90,10 +90,6 @@ body {
     0%,
     100% {
         background-position: 0% 50%;
-    }
-
-    50% {
-        background-position: 100% 50%;
     }
 
     50% {
@@ -126,17 +122,6 @@ body {
     overflow: hidden;
 }
 
-.container::before {
-    content: '';
-    position: absolute;
-    top: 0;
-    left: 0;
-    right: 0;
-    height: 5px;
-    background: linear-gradient(90deg, var(--primary), var(--accent), var(--primary-light), var(--accent-light));
-    background-size: 300% 100%;
-    animation: shimmer 4s ease-in-out infinite;
-}
 
 @keyframes containerEntry {
     0% {
@@ -147,18 +132,6 @@ body {
     100% {
         opacity: 1;
         transform: translateY(0) scale(1);
-    }
-}
-
-@keyframes shimmer {
-
-    0%,
-    100% {
-        background-position: 0% 50%;
-    }
-
-    50% {
-        background-position: 100% 50%;
     }
 }
 
@@ -188,7 +161,7 @@ h1 {
     -webkit-background-clip: text;
     background-clip: text;
     -webkit-text-fill-color: transparent;
-    font-family: 'Poppins', sans-serif;
+    font-family: 'DM Sans', sans-serif;
     font-weight: 700;
     font-size: 1.6rem;
     margin: 0 0 4px 0;
@@ -537,6 +510,19 @@ button:active::before {
 }
 
 /* ==========================================
+   FOOTER
+   ========================================== */
+.app-footer {
+    margin-top: 16px;
+    padding: 12px 0;
+    text-align: center;
+    font-size: 0.85rem;
+    color: var(--text-muted);
+    font-weight: 500;
+    letter-spacing: 0.5px;
+}
+
+/* ==========================================
    KLASSRUMSLAYOUT
    ========================================== */
 #classroom-layout {
@@ -603,7 +589,7 @@ button:active::before {
     border-color: #4338ca;
     box-shadow: var(--shadow-md), 0 0 25px rgba(99, 102, 241, 0.35);
     font-weight: 700;
-    animation: placeStudent 0.5s var(--transition-bounce);
+    animation: placeStudent 0.4s ease-out;
 }
 
 @keyframes placeStudent {
@@ -742,7 +728,7 @@ button:active::before {
     max-width: 420px;
     width: 90%;
     text-align: center;
-    animation: modalSlideIn 0.4s var(--transition-bounce);
+    animation: modalSlideIn 0.3s ease-out;
     border: 1px solid rgba(255, 255, 255, 0.5);
 }
 
