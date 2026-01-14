@@ -409,6 +409,7 @@ function renderDesk(deskInfo) {
     desk.addEventListener('mousedown', (e) => {
         e.preventDefault();
         isDragging = true;
+        document.body.classList.add('dragging'); // Visuell feedback
         const isBlocked = blockedSeats.includes(deskInfo.id);
         dragMode = isBlocked ? 'unblock' : 'block';
         toggleBlockSeat(deskInfo.id);
@@ -614,8 +615,9 @@ function assignAllStudents() {
     }
 
     // Blanda elever och platser
-    const shuffledStudents = [...studentList].sort(() => Math.random() - 0.5);
-    const shuffledSeats = [...availableSeats].sort(() => Math.random() - 0.5);
+    // Blanda elever och platser med Fisher-Yates algoritm
+    const shuffledStudents = shuffleArray([...studentList]);
+    const shuffledSeats = shuffleArray([...availableSeats]);
 
     // Tilldela platser
     assignments = {};
@@ -774,6 +776,7 @@ document.addEventListener('DOMContentLoaded', () => {
     document.addEventListener('mouseup', () => {
         isDragging = false;
         dragMode = null;
+        document.body.classList.remove('dragging'); // Ta bort visuell feedback
     });
 
     // Förhindra text-markering vid drag
@@ -889,4 +892,18 @@ function exportAsImage() {
         exportButton.textContent = originalText;
         exportButton.disabled = false;
     }
+}
+
+/**
+ * Blandar en array slumpmässigt (Fisher-Yates)
+ * @param {Array} array - Array att blanda
+ * @returns {Array} En ny blandad array
+ */
+function shuffleArray(array) {
+    const newArray = [...array];
+    for (let i = newArray.length - 1; i > 0; i--) {
+        const j = Math.floor(Math.random() * (i + 1));
+        [newArray[i], newArray[j]] = [newArray[j], newArray[i]];
+    }
+    return newArray;
 }

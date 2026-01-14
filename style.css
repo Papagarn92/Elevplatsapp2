@@ -95,6 +95,16 @@ body {
     50% {
         background-position: 100% 50%;
     }
+
+    50% {
+        background-position: 100% 50%;
+    }
+}
+
+/* Global grabbing cursor vid drag */
+.dragging,
+.dragging * {
+    cursor: grabbing !important;
 }
 
 /* ==========================================
